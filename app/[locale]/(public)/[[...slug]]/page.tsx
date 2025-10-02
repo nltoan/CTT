@@ -2,7 +2,12 @@ import {notFound} from 'next/navigation';
 
 import {PageRenderer} from '@components/PageRenderer';
 import {PageShell} from '@components/layout/PageShell';
-import {getPageForTenant, getNavigation, getRecentPosts} from '@lib/pages';
+import {
+  getPageForTenant,
+  getNavigation,
+  getRecentPosts,
+  getEvents as getEventsForTenant
+} from '@lib/pages';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 export async function generateMetadata({
@@ -58,6 +63,15 @@ export default async function Page({
         blocks={page.blocks}
         locale={locale}
         getPosts={(limit) => getRecentPosts({tenantId: tenant.id, locale, limit})}
+        getEvents={(options) =>
+          getEventsForTenant({
+            tenantId: tenant.id,
+            locale,
+            from: options?.from,
+            to: options?.to,
+            limit: options?.limit
+          })
+        }
         tenantPath={tenantPath}
         tenantId={tenant.id}
       />

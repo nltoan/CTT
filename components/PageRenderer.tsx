@@ -11,25 +11,29 @@ import {ImageGallery} from './blocks/ImageGallery';
 import {CtaButtons} from './blocks/CtaButtons';
 import {Slideshow} from './blocks/Slideshow';
 import {RichContent} from './blocks/RichContent';
+import {EventList} from './blocks/EventList';
 
 import type {Block} from '@types/blocks';
-import type {Post} from '@types/cms';
+import type {Event, Post} from '@types/cms';
 import type {FormView} from '@types/forms';
 import type {Locale} from '@i18n/config';
 import {getFormView} from '@lib/forms';
 
 type PostLookup = (limit?: number) => Promise<Post[]>;
+type EventLookup = (options?: {from?: Date; to?: Date; limit?: number}) => Promise<Event[]>;
 
 export async function PageRenderer({
   blocks,
   locale,
   getPosts,
+  getEvents,
   tenantPath = '',
   tenantId
 }: {
   blocks: Block[];
   locale: Locale;
   getPosts: PostLookup;
+  getEvents: EventLookup;
   tenantPath?: string;
   tenantId: string;
 }) {
@@ -38,6 +42,14 @@ export async function PageRenderer({
       if (block.type === 'post-list') {
         const posts = await getPosts(block.query?.limit);
         return {block, posts};
+      }
+      if (block.type === 'event-list') {
+        const events = await getEvents({
+          from: block.query?.from ? new Date(block.query.from) : undefined,
+          to: block.query?.to ? new Date(block.query.to) : undefined,
+          limit: block.query?.limit
+        });
+        return {block, events};
       }
       if (block.type === 'contact' && block.formKey) {
         const form = await getFormView({
@@ -53,7 +65,20 @@ export async function PageRenderer({
 
   return (
     <main>
-      {resolvedBlocks.map(({block, posts, form}: {block: Block; posts?: Post[]; form?: FormView | null}, index) => {
+      {resolvedBlocks.map(
+        ({
+          block,
+          posts,
+          events,
+          form
+        }: {
+          block: Block;
+          posts?: Post[];
+          events?: Event[];
+          form?: FormView | null;
+        },
+        index
+      ) => {
         switch (block.type) {
           case 'hero-countdown':
             return <HeroCountdown key={index} block={block} />;
@@ -73,6 +98,16 @@ export async function PageRenderer({
                 key={index}
                 block={block}
                 posts={posts}
+                locale={locale}
+                tenantPath={tenantPath}
+              />
+            ) : null;
+          case 'event-list':
+            return events ? (
+              <EventList
+                key={index}
+                block={block}
+                events={events}
                 locale={locale}
                 tenantPath={tenantPath}
               />

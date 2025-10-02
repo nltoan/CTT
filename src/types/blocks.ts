@@ -93,6 +93,19 @@ export type PostListBlock = {
   };
 };
 
+export type EventListBlock = {
+  type: 'event-list';
+  title?: string;
+  description?: string;
+  ctaLabel?: string;
+  emptyStateMessage?: string;
+  query?: {
+    from?: string;
+    to?: string;
+    limit?: number;
+  };
+};
+
 export type ContactBlock = {
   type: 'contact';
   title?: string;
@@ -170,6 +183,7 @@ export type Block =
   | SponsorsGridBlock
   | PeopleGridBlock
   | PostListBlock
+  | EventListBlock
   | ContactBlock
   | TestimonialsBlock
   | ImageGalleryBlock

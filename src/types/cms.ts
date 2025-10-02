@@ -1,5 +1,12 @@
 import type {Block} from './blocks';
 
+export type TenantSocialLink = {
+  id: string;
+  label: string;
+  url: string;
+  platform?: 'facebook' | 'youtube' | 'instagram' | 'tiktok' | 'website' | string;
+};
+
 export type Tenant = {
   id: string;
   slug: string;
@@ -11,6 +18,9 @@ export type Tenant = {
   logoUrl?: string;
   locales: ('vi' | 'en')[];
   domain?: string;
+  fontDisplay?: string;
+  fontBody?: string;
+  socialLinks?: TenantSocialLink[];
 };
 
 export type NavigationItem = {

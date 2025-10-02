@@ -33,7 +33,24 @@ export function SiteFooter({
             </a>
           ))}
         </nav>
-        <p className="text-xs text-white/60">© {new Date().getFullYear()} {tenant.name}</p>
+        <div className="flex flex-col items-start gap-3 text-sm text-white/70 md:items-end">
+          {tenant.socialLinks && tenant.socialLinks.length > 0 && (
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              {tenant.socialLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  className="transition hover:text-white"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-white/60">© {new Date().getFullYear()} {tenant.name}</p>
+        </div>
       </div>
     </footer>
   );

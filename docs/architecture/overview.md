@@ -163,7 +163,9 @@ export function BlockRenderer({ blocks }: { blocks: Block[] }) {
 ```
 
 Các block UI đã được scaffold trong frontend gồm: `hero-countdown`, `cta-buttons`, `disciplines-grid`, `slideshow`, `timeline`,
-`rich-content`, `image-gallery`, `testimonials`, `prizes`, `sponsors-grid`, `people-grid`, `post-list`, `contact`.
+`rich-content`, `image-gallery`, `testimonials`, `prizes`, `sponsors-grid`, `people-grid`, `event-list`, `post-list`, `contact`.
+
+Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild.
 
 ## API Public Layer
 

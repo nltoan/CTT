@@ -51,7 +51,9 @@ export function getTenantThemeCssVariables(tenant: Tenant) {
   return {
     '--color-primary': tenant.primaryColor ?? '#d72638',
     '--color-secondary': tenant.secondaryColor ?? '#292f36',
-    '--color-accent': tenant.accentColor ?? '#f5a623'
+    '--color-accent': tenant.accentColor ?? '#f5a623',
+    '--font-display': tenant.fontDisplay ?? 'Be Vietnam Pro',
+    '--font-body': tenant.fontBody ?? 'Inter'
   } as React.CSSProperties;
 }
 

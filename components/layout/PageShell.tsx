@@ -2,6 +2,7 @@ import {SiteFooter} from './SiteFooter';
 import {SiteHeader} from './SiteHeader';
 
 import type {Navigation, Tenant} from '@types/cms';
+import {getTenantThemeCssVariables} from '@lib/tenant';
 
 export function PageShell({
   tenant,
@@ -19,7 +20,11 @@ export function PageShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div
+      className="flex min-h-screen flex-col font-body"
+      style={getTenantThemeCssVariables(tenant)}
+      data-tenant={tenant.slug}
+    >
       <SiteHeader
         tenant={tenant}
         navigation={headerNavigation}

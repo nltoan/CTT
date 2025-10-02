@@ -56,14 +56,24 @@ export async function getEvents({
   tenantId,
   locale,
   from,
-  to
+  to,
+  limit
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   from?: Date;
   to?: Date;
+  limit?: number;
 }) {
-  return listEventsByTenant({tenantId, locale, from, to});
+  const events = listEventsByTenant({tenantId, locale, from, to}).sort(
+    (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+  );
+
+  if (typeof limit === 'number') {
+    return events.slice(0, limit);
+  }
+
+  return events;
 }
 
 export type PageWithNavigation = Page & {

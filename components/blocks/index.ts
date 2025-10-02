@@ -5,6 +5,7 @@ export {Prizes} from './Prizes';
 export {SponsorsGrid} from './SponsorsGrid';
 export {PeopleGrid} from './PeopleGrid';
 export {PostList} from './PostList';
+export {EventList} from './EventList';
 export {ContactBlock} from './ContactBlock';
 export {Testimonials} from './Testimonials';
 export {ImageGallery} from './ImageGallery';

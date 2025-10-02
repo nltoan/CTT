@@ -5,6 +5,7 @@ import type {
   HeroCountdownBlock,
   PeopleGridBlock,
   PostListBlock,
+  EventListBlock,
   PrizesBlock,
   SponsorsGridBlock,
   TimelineBlock,
@@ -469,6 +470,21 @@ const createPostListBlock = (locale: 'vi' | 'en'): PostListBlock => ({
   query: {limit: 4}
 });
 
+const createEventListBlock = (locale: 'vi' | 'en'): EventListBlock => ({
+  type: 'event-list',
+  title: locale === 'vi' ? 'Sự kiện sắp tới' : 'Upcoming events',
+  description:
+    locale === 'vi'
+      ? 'Lịch workshop, audition và concert mới nhất dành cho thí sinh.'
+      : 'Latest workshops, auditions, and concert highlights for contestants.',
+  ctaLabel: locale === 'vi' ? 'Xem toàn bộ lịch trình' : 'View full schedule',
+  emptyStateMessage:
+    locale === 'vi'
+      ? 'Hiện chưa có sự kiện nào. Vui lòng quay lại sau.'
+      : 'There are no scheduled events yet. Please come back later.',
+  query: {limit: 4}
+});
+
 const mainPages = ['vi', 'en'].flatMap((locale) => [
   {
     id: `home-${locale}`,
@@ -481,6 +497,7 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
       createCtaBlock(locale),
       createDisciplinesBlock(locale),
       createSlideshowBlock(locale),
+      createEventListBlock(locale),
       createTimelineBlock(locale),
       createRichContentBlock(locale),
       createGalleryBlock(locale),
@@ -548,8 +565,10 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
     locale,
     blocks: [
       classicHeroBlock(locale),
+      createCtaBlock(locale),
       createDisciplinesBlock(locale),
       createSlideshowBlock(locale),
+      createEventListBlock(locale),
       createTimelineBlock(locale),
       createRichContentBlock(locale),
       createTestimonialsBlock(locale),

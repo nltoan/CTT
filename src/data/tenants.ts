@@ -10,8 +10,15 @@ export const tenants: Tenant[] = [
     primaryColor: '#d72638',
     secondaryColor: '#292f36',
     accentColor: '#f5a623',
+    fontDisplay: '"Playfair Display", serif',
+    fontBody: 'Inter, sans-serif',
     locales: ['vi', 'en'],
-    domain: 'cimfc.local'
+    domain: 'cimfc.local',
+    socialLinks: [
+      {id: 'main-facebook', label: 'Facebook', platform: 'facebook', url: 'https://facebook.com/cttmusic'},
+      {id: 'main-youtube', label: 'YouTube', platform: 'youtube', url: 'https://youtube.com/@cttmusic'},
+      {id: 'main-website', label: 'Website', platform: 'website', url: 'https://cttmusic.example.com'}
+    ]
   },
   {
     id: 'tenant-classic',
@@ -22,8 +29,14 @@ export const tenants: Tenant[] = [
     primaryColor: '#1a5f7a',
     secondaryColor: '#0f172a',
     accentColor: '#f59e0b',
+    fontDisplay: '"Cormorant Garamond", serif',
+    fontBody: '"Source Sans Pro", sans-serif',
     locales: ['vi', 'en'],
-    domain: 'classic.cimfc.local'
+    domain: 'classic.cimfc.local',
+    socialLinks: [
+      {id: 'classic-facebook', label: 'Facebook', platform: 'facebook', url: 'https://facebook.com/cttclassical'},
+      {id: 'classic-instagram', label: 'Instagram', platform: 'instagram', url: 'https://instagram.com/cttclassical'}
+    ]
   }
 ];
 
