@@ -105,6 +105,62 @@ export type ContactBlock = {
   mapEmbed?: string;
 };
 
+export type TestimonialsBlock = {
+  type: 'testimonials';
+  title?: string;
+  description?: string;
+  items: {
+    quote: string;
+    name: string;
+    title?: string;
+    avatar?: MediaRef;
+  }[];
+};
+
+export type ImageGalleryBlock = {
+  type: 'image-gallery';
+  title?: string;
+  description?: string;
+  layout?: 'grid' | 'masonry';
+  items: {
+    media: MediaRef;
+    caption?: string;
+    href?: string;
+  }[];
+};
+
+export type CtaButtonsBlock = {
+  type: 'cta-buttons';
+  title?: string;
+  description?: string;
+  items: Cta[];
+  align?: 'start' | 'center';
+};
+
+export type SlideshowBlock = {
+  type: 'slideshow';
+  title?: string;
+  description?: string;
+  slides: {
+    id: string;
+    image: MediaRef;
+    title?: string;
+    caption?: string;
+    href?: string;
+  }[];
+  options?: {
+    autoplay?: boolean;
+    interval?: number;
+    loop?: boolean;
+  };
+};
+
+export type RichContentBlock = {
+  type: 'rich-content';
+  title?: string;
+  content: string;
+};
+
 export type Block =
   | HeroCountdownBlock
   | DisciplinesGridBlock
@@ -113,4 +169,9 @@ export type Block =
   | SponsorsGridBlock
   | PeopleGridBlock
   | PostListBlock
-  | ContactBlock;
+  | ContactBlock
+  | TestimonialsBlock
+  | ImageGalleryBlock
+  | CtaButtonsBlock
+  | SlideshowBlock
+  | RichContentBlock;

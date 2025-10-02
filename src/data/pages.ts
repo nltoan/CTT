@@ -7,7 +7,12 @@ import type {
   PostListBlock,
   PrizesBlock,
   SponsorsGridBlock,
-  TimelineBlock
+  TimelineBlock,
+  TestimonialsBlock,
+  ImageGalleryBlock,
+  CtaButtonsBlock,
+  SlideshowBlock,
+  RichContentBlock
 } from '@types/blocks';
 
 const heroBlock = (locale: 'vi' | 'en'): HeroCountdownBlock => ({
@@ -263,6 +268,179 @@ const createPeopleBlock = (locale: 'vi' | 'en'): PeopleGridBlock => ({
   ]
 });
 
+const createTestimonialsBlock = (locale: 'vi' | 'en'): TestimonialsBlock => ({
+  type: 'testimonials',
+  title: locale === 'vi' ? 'Chia sẻ từ giám khảo & thí sinh' : 'Voices from judges & contestants',
+  description:
+    locale === 'vi'
+      ? 'Những câu chuyện truyền cảm hứng về hành trình âm nhạc cùng CTT.'
+      : 'Inspiring stories from the CTT music journey.',
+  items: [
+    {
+      quote:
+        locale === 'vi'
+          ? 'CTT mang đến sân khấu chuẩn quốc tế để nghệ sĩ trẻ tự tin tỏa sáng.'
+          : 'CTT delivers an international-standard stage for young artists to shine.',
+      name: locale === 'vi' ? 'TS. Lưu Quang Minh' : 'Dr. Luu Quang Minh',
+      title: locale === 'vi' ? 'Giám khảo hạng mục Piano' : 'Piano jury member',
+      avatar: {
+        id: 'testimonial-1',
+        url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1',
+        alt: 'Jury member portrait'
+      }
+    },
+    {
+      quote:
+        locale === 'vi'
+          ? 'Khoảnh khắc biểu diễn tại gala CTT sẽ là ký ức đẹp nhất của tôi.'
+          : 'Performing at the CTT gala was the highlight of my musical journey.',
+      name: locale === 'vi' ? 'Trần Mai Anh' : 'Mai Anh Tran',
+      title: locale === 'vi' ? 'Quán quân 2024 - Thanh nhạc' : '2024 Vocal champion',
+      avatar: {
+        id: 'testimonial-2',
+        url: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39',
+        alt: 'Contest winner portrait'
+      }
+    }
+  ]
+});
+
+const createGalleryBlock = (locale: 'vi' | 'en'): ImageGalleryBlock => ({
+  type: 'image-gallery',
+  title: locale === 'vi' ? 'Khoảnh khắc nổi bật' : 'Highlights from the stage',
+  description:
+    locale === 'vi'
+      ? 'Hình ảnh từ các vòng thi và chương trình hòa nhạc của CTT.'
+      : 'Scenes captured from CTT rounds and concerts.',
+  layout: 'masonry',
+  items: [
+    {
+      media: {
+        id: 'gallery-1',
+        url: 'https://images.unsplash.com/photo-1485579149621-3123dd979885',
+        alt: 'Pianist performing on stage'
+      },
+      caption: locale === 'vi' ? 'Biểu diễn Piano đêm chung kết' : 'Final night piano performance'
+    },
+    {
+      media: {
+        id: 'gallery-2',
+        url: 'https://images.unsplash.com/photo-1520512202623-51c5cdb34f6f',
+        alt: 'String quartet'
+      },
+      caption: locale === 'vi' ? 'Tứ tấu dây học viện' : 'Academy string quartet'
+    },
+    {
+      media: {
+        id: 'gallery-3',
+        url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef',
+        alt: 'Audience applauding'
+      },
+      caption: locale === 'vi' ? 'Khán giả tại Nhà hát lớn' : 'Audience at the Opera House'
+    },
+    {
+      media: {
+        id: 'gallery-4',
+        url: 'https://images.unsplash.com/photo-1484920287878-4b5e04d74fdc',
+        alt: 'Vocal performance'
+      },
+      caption: locale === 'vi' ? 'Thí sinh hạng mục Thanh nhạc' : 'Vocal category contestant'
+    }
+  ]
+});
+
+const createCtaBlock = (locale: 'vi' | 'en'): CtaButtonsBlock => ({
+  type: 'cta-buttons',
+  title: locale === 'vi' ? 'Sẵn sàng tham gia?' : 'Ready to join?',
+  description:
+    locale === 'vi'
+      ? 'Chọn hành động phù hợp để bắt đầu hành trình cùng CTT.'
+      : 'Take the next step and begin your journey with CTT.',
+  align: 'center',
+  items: [
+    {
+      label: locale === 'vi' ? 'Đăng ký dự thi' : 'Apply now',
+      href: 'https://example.com/apply',
+      external: true
+    },
+    {
+      label: locale === 'vi' ? 'Tải thể lệ' : 'Download guidelines',
+      href: 'https://example.com/rules.pdf',
+      external: true
+    },
+    {
+      label: locale === 'vi' ? 'Nhận tư vấn' : 'Book consultation',
+      href: '/contact'
+    }
+  ]
+});
+
+const createSlideshowBlock = (locale: 'vi' | 'en'): SlideshowBlock => ({
+  type: 'slideshow',
+  title: locale === 'vi' ? 'Không khí lễ hội CTT' : 'The CTT festival atmosphere',
+  description:
+    locale === 'vi'
+      ? 'Cảm nhận năng lượng của các buổi biểu diễn và chương trình giao lưu.'
+      : 'Feel the energy from performances and community events.',
+  slides: [
+    {
+      id: 'slide-1',
+      title: locale === 'vi' ? 'Khai mạc ấn tượng' : 'Grand opening night',
+      caption:
+        locale === 'vi'
+          ? 'Toàn bộ dàn nhạc và giọng ca mở màn mùa thi mới.'
+          : 'The full orchestra and vocalists open the new season.',
+      image: {
+        id: 'slide-1-img',
+        url: 'https://images.unsplash.com/photo-1503424886303-4c8b4d82b1fb',
+        alt: 'Opening concert stage'
+      }
+    },
+    {
+      id: 'slide-2',
+      title: locale === 'vi' ? 'Workshop chuyên sâu' : 'Immersive masterclasses',
+      caption:
+        locale === 'vi'
+          ? 'Giảng viên quốc tế đồng hành cùng thí sinh trong suốt quá trình luyện tập.'
+          : 'International faculty guiding contestants throughout preparation.',
+      image: {
+        id: 'slide-2-img',
+        url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',
+        alt: 'Masterclass session'
+      }
+    },
+    {
+      id: 'slide-3',
+      title: locale === 'vi' ? 'Gala vinh danh' : 'Celebration gala',
+      caption:
+        locale === 'vi'
+          ? 'Tôn vinh những tài năng xuất sắc và kết nối cộng đồng âm nhạc.'
+          : 'Honouring talents and connecting the music community.',
+      image: {
+        id: 'slide-3-img',
+        url: 'https://images.unsplash.com/photo-1497032205916-ac775f0649ae',
+        alt: 'Gala celebration'
+      }
+    }
+  ],
+  options: {
+    autoplay: true,
+    interval: 7000,
+    loop: true
+  }
+});
+
+const createRichContentBlock = (locale: 'vi' | 'en'): RichContentBlock => ({
+  type: 'rich-content',
+  title: locale === 'vi' ? 'Tầm nhìn & sứ mệnh' : 'Vision & mission',
+  content:
+    locale === 'vi'
+      ? `<p>CTT hướng đến xây dựng cộng đồng âm nhạc trẻ đa văn hóa, tạo điều kiện cho các tài năng khám phá bản thân thông qua biểu diễn, sáng tạo và kết nối.</p>
+         <p>Chúng tôi kết hợp hệ thống đánh giá minh bạch cùng chương trình cố vấn chuyên sâu để đồng hành cùng thí sinh trên hành trình dài hạn.</p>`
+      : `<p>CTT nurtures a multicultural community of young musicians, empowering talents to explore their artistry through performance, creativity and collaboration.</p>
+         <p>Transparent evaluation standards and long-term mentorship ensure each contestant receives personalised guidance.</p>`
+});
+
 const createContactBlock = (locale: 'vi' | 'en'): ContactBlock => ({
   type: 'contact',
   title: locale === 'vi' ? 'Liên hệ' : 'Contact',
@@ -299,8 +477,13 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
     locale,
     blocks: [
       heroBlock(locale),
+      createCtaBlock(locale),
       createDisciplinesBlock(locale),
+      createSlideshowBlock(locale),
       createTimelineBlock(locale),
+      createRichContentBlock(locale),
+      createGalleryBlock(locale),
+      createTestimonialsBlock(locale),
       createPrizesBlock(locale),
       createSponsorsBlock(locale),
       createPeopleBlock(locale),
@@ -365,7 +548,10 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
     blocks: [
       classicHeroBlock(locale),
       createDisciplinesBlock(locale),
+      createSlideshowBlock(locale),
       createTimelineBlock(locale),
+      createRichContentBlock(locale),
+      createTestimonialsBlock(locale),
       createPeopleBlock(locale),
       createContactBlock(locale)
     ]

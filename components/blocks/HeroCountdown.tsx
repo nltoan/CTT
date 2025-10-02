@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect, useMemo, useState} from 'react';
+import type React from 'react';
 
 import type {HeroCountdownBlock} from '@types/blocks';
 

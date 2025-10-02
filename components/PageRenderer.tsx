@@ -6,6 +6,11 @@ import {PostList} from './blocks/PostList';
 import {Prizes} from './blocks/Prizes';
 import {SponsorsGrid} from './blocks/SponsorsGrid';
 import {Timeline} from './blocks/Timeline';
+import {Testimonials} from './blocks/Testimonials';
+import {ImageGallery} from './blocks/ImageGallery';
+import {CtaButtons} from './blocks/CtaButtons';
+import {Slideshow} from './blocks/Slideshow';
+import {RichContent} from './blocks/RichContent';
 
 import type {Block} from '@types/blocks';
 import type {Post} from '@types/cms';
@@ -62,6 +67,16 @@ export async function PageRenderer({
             ) : null;
           case 'contact':
             return <ContactBlock key={index} block={block} />;
+          case 'testimonials':
+            return <Testimonials key={index} block={block} />;
+          case 'image-gallery':
+            return <ImageGallery key={index} block={block} />;
+          case 'cta-buttons':
+            return <CtaButtons key={index} block={block} locale={locale} tenantPath={tenantPath} />;
+          case 'slideshow':
+            return <Slideshow key={index} block={block} locale={locale} tenantPath={tenantPath} />;
+          case 'rich-content':
+            return <RichContent key={index} block={block} />;
           default:
             return null;
         }

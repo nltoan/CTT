@@ -162,6 +162,9 @@ export function BlockRenderer({ blocks }: { blocks: Block[] }) {
 }
 ```
 
+Các block UI đã được scaffold trong frontend gồm: `hero-countdown`, `cta-buttons`, `disciplines-grid`, `slideshow`, `timeline`,
+`rich-content`, `image-gallery`, `testimonials`, `prizes`, `sponsors-grid`, `people-grid`, `post-list`, `contact`.
+
 ## API Public Layer
 
 CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:

@@ -6,3 +6,8 @@ export {SponsorsGrid} from './SponsorsGrid';
 export {PeopleGrid} from './PeopleGrid';
 export {PostList} from './PostList';
 export {ContactBlock} from './ContactBlock';
+export {Testimonials} from './Testimonials';
+export {ImageGallery} from './ImageGallery';
+export {CtaButtons} from './CtaButtons';
+export {Slideshow} from './Slideshow';
+export {RichContent} from './RichContent';
