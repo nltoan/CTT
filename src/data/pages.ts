@@ -52,7 +52,14 @@ const heroBlock = (locale: 'vi' | 'en'): HeroCountdownBlock => ({
     url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',
     alt: 'Performance stage with piano'
   },
-  overlay: true
+  overlay: true,
+  style: {
+    container: 'wide',
+    spacing: {padding: 'lg'},
+    theme: {
+      primary: '#f97316'
+    }
+  }
 });
 
 const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
@@ -125,7 +132,11 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         alt: 'Orchestra on stage'
       }
     }
-  ]
+  ],
+  style: {
+    container: 'wide',
+    spacing: {padding: 'sm'}
+  }
 });
 
 const createTimelineBlock = (locale: 'vi' | 'en'): TimelineBlock => ({
@@ -160,7 +171,12 @@ const createTimelineBlock = (locale: 'vi' | 'en'): TimelineBlock => ({
           ? 'Trình diễn tại Nhà hát lớn với dàn nhạc giao hưởng.'
           : 'Perform at the Opera House with a symphony orchestra.'
     }
-  ]
+  ],
+  style: {
+    variant: 'muted',
+    container: 'wide',
+    spacing: {padding: 'md'}
+  }
 });
 
 const createPrizesBlock = (locale: 'vi' | 'en'): PrizesBlock => ({
@@ -192,7 +208,12 @@ const createPrizesBlock = (locale: 'vi' | 'en'): PrizesBlock => ({
           ? 'Chứng nhận Festival và cơ hội biểu diễn cùng dàn nhạc.'
           : 'Festival certificate and a featured performance with orchestra.'
     }
-  ]
+  ],
+  style: {
+    container: 'wide',
+    spacing: {padding: 'md'},
+    variant: 'accent'
+  }
 });
 
 const createSponsorsBlock = (tenantId: string, locale: 'vi' | 'en'): SponsorsGridBlock => {
@@ -213,7 +234,13 @@ const createSponsorsBlock = (tenantId: string, locale: 'vi' | 'en'): SponsorsGri
       logo: sponsor.logo,
       tier: sponsor.tier,
       url: sponsor.url
-    }))
+    })),
+    style: {
+      container: 'wide',
+      spacing: {padding: 'md'},
+      variant: 'muted',
+      divider: 'top'
+    }
   };
 };
 
@@ -235,7 +262,16 @@ const createPeopleBlock = (tenantId: string, locale: 'vi' | 'en'): PeopleGridBlo
       title: person.title,
       bio: person.bio,
       photo: person.photo
-    }))
+    })),
+    style: {
+      container: 'wide',
+      spacing: {padding: 'md'},
+      variant: 'contrast',
+      theme: {
+        primary: '#facc15',
+        accent: '#fde68a'
+      }
+    }
   };
 };
 
@@ -273,7 +309,12 @@ const createTestimonialsBlock = (locale: 'vi' | 'en'): TestimonialsBlock => ({
         alt: 'Contest winner portrait'
       }
     }
-  ]
+  ],
+  style: {
+    container: 'wide',
+    spacing: {padding: 'md'},
+    variant: 'muted'
+  }
 });
 
 const createGalleryBlock = (locale: 'vi' | 'en'): ImageGalleryBlock => ({
@@ -317,7 +358,11 @@ const createGalleryBlock = (locale: 'vi' | 'en'): ImageGalleryBlock => ({
       },
       caption: locale === 'vi' ? 'Thí sinh hạng mục Thanh nhạc' : 'Vocal category contestant'
     }
-  ]
+  ],
+  style: {
+    container: 'wide',
+    spacing: {padding: 'md'}
+  }
 });
 
 const createCtaBlock = (locale: 'vi' | 'en'): CtaButtonsBlock => ({
@@ -343,7 +388,11 @@ const createCtaBlock = (locale: 'vi' | 'en'): CtaButtonsBlock => ({
       label: locale === 'vi' ? 'Nhận tư vấn' : 'Book consultation',
       href: '/contact'
     }
-  ]
+  ],
+  style: {
+    container: 'narrow',
+    spacing: {padding: 'sm'}
+  }
 });
 
 const createSlideshowBlock = (locale: 'vi' | 'en'): SlideshowBlock => ({
@@ -398,6 +447,9 @@ const createSlideshowBlock = (locale: 'vi' | 'en'): SlideshowBlock => ({
     autoplay: true,
     interval: 7000,
     loop: true
+  },
+  style: {
+    spacing: {padding: 'md'}
   }
 });
 
@@ -409,7 +461,11 @@ const createRichContentBlock = (locale: 'vi' | 'en'): RichContentBlock => ({
       ? `<p>CTT hướng đến xây dựng cộng đồng âm nhạc trẻ đa văn hóa, tạo điều kiện cho các tài năng khám phá bản thân thông qua biểu diễn, sáng tạo và kết nối.</p>
          <p>Chúng tôi kết hợp hệ thống đánh giá minh bạch cùng chương trình cố vấn chuyên sâu để đồng hành cùng thí sinh trên hành trình dài hạn.</p>`
       : `<p>CTT nurtures a multicultural community of young musicians, empowering talents to explore their artistry through performance, creativity and collaboration.</p>
-         <p>Transparent evaluation standards and long-term mentorship ensure each contestant receives personalised guidance.</p>`
+         <p>Transparent evaluation standards and long-term mentorship ensure each contestant receives personalised guidance.</p>`,
+  style: {
+    container: 'narrow',
+    spacing: {padding: 'md'}
+  }
 });
 
 const createContactBlock = (locale: 'vi' | 'en'): ContactBlock => ({
@@ -426,7 +482,12 @@ const createContactBlock = (locale: 'vi' | 'en'): ContactBlock => ({
   emailLabel: 'Email',
   mapEmbed:
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.376909743348!2d105.83966957604814!3d21.01703998834733!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab7f5e63d019%3A0xa40dfd1f720733d8!2zSMOgIE7hu5lpIFRo4bqldCAtIEPDtG5nIHZp4buFbiBiw6AgdGh14bqtdA!5e0!3m2!1sen!2s!4v1706810000000!5m2!1sen!2s',
-  formKey: 'contact'
+  formKey: 'contact',
+  style: {
+    container: 'narrow',
+    spacing: {padding: 'md'},
+    variant: 'muted'
+  }
 });
 
 const createPostListBlock = (locale: 'vi' | 'en'): PostListBlock => ({
@@ -437,7 +498,12 @@ const createPostListBlock = (locale: 'vi' | 'en'): PostListBlock => ({
       ? 'Cập nhật thông tin hoạt động, lịch thi và câu chuyện truyền cảm hứng.'
       : 'News, schedules and inspiring stories from the festival.',
   ctaLabel: locale === 'vi' ? 'Đọc thêm' : 'Read more',
-  query: {limit: 4}
+  query: {limit: 4},
+  style: {
+    container: 'wide',
+    spacing: {padding: 'md'},
+    variant: 'muted'
+  }
 });
 
 const createEventListBlock = (locale: 'vi' | 'en'): EventListBlock => ({
@@ -452,7 +518,11 @@ const createEventListBlock = (locale: 'vi' | 'en'): EventListBlock => ({
     locale === 'vi'
       ? 'Hiện chưa có sự kiện nào. Vui lòng quay lại sau.'
       : 'There are no scheduled events yet. Please come back later.',
-  query: {limit: 4}
+  query: {limit: 4},
+  style: {
+    container: 'wide',
+    spacing: {padding: 'md'}
+  }
 });
 
 const mainPages = ['vi', 'en'].flatMap((locale) => [

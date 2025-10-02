@@ -1,4 +1,7 @@
+import clsx from 'clsx';
+
 import type {RichContentBlock} from '@types/blocks';
+import {BlockSection} from './BlockSection';
 
 export function RichContent({block}: {block: RichContentBlock}) {
   if (!block.content) {
@@ -6,15 +9,19 @@ export function RichContent({block}: {block: RichContentBlock}) {
   }
 
   return (
-    <section className="bg-white py-16">
-      <div className="rich-content mx-auto w-full max-w-3xl px-6 text-secondary">
-        {block.title ? (
-          <h2 className="mb-6 text-3xl font-semibold tracking-tight text-secondary sm:text-4xl">
-            {block.title}
-          </h2>
-        ) : null}
-        <div className="rich-content__body" dangerouslySetInnerHTML={{__html: block.content}} />
-      </div>
-    </section>
+    <BlockSection block={block} innerClassName="rich-content mx-auto w-full max-w-3xl text-secondary">
+      {block.title ? (
+        <h2
+          className={clsx(
+            'mb-6 text-3xl font-semibold tracking-tight sm:text-4xl',
+            block.style?.align === 'center' && 'text-center',
+            block.style?.align === 'end' && 'text-right'
+          )}
+        >
+          {block.title}
+        </h2>
+      ) : null}
+      <div className="rich-content__body" dangerouslySetInnerHTML={{__html: block.content}} />
+    </BlockSection>
   );
 }

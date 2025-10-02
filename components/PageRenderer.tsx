@@ -22,6 +22,15 @@ import {getFormView} from '@lib/forms';
 type PostLookup = (limit?: number) => Promise<Post[]>;
 type EventLookup = (options?: {from?: Date; to?: Date; limit?: number}) => Promise<Event[]>;
 
+function isHiddenEverywhere(block: Block) {
+  const visibility = block.style?.visibility;
+  if (!visibility) {
+    return false;
+  }
+  const {mobile, tablet, desktop} = visibility;
+  return mobile === false && tablet === false && desktop === false;
+}
+
 export async function PageRenderer({
   blocks,
   locale,
@@ -37,8 +46,10 @@ export async function PageRenderer({
   tenantPath?: string;
   tenantId: string;
 }) {
+  const visibleBlocks = blocks.filter((block) => !isHiddenEverywhere(block));
+
   const resolvedBlocks = await Promise.all(
-    blocks.map(async (block) => {
+    visibleBlocks.map(async (block) => {
       if (block.type === 'post-list') {
         const posts = await getPosts(block.query?.limit);
         return {block, posts};

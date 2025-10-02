@@ -1,10 +1,20 @@
+import clsx from 'clsx';
+
 import type {DisciplinesGridBlock} from '@types/blocks';
+import {BlockSection} from './BlockSection';
 
 export function DisciplinesGrid({block}: {block: DisciplinesGridBlock}) {
+  const headingAlign =
+    block.style?.align === 'center'
+      ? 'text-center'
+      : block.style?.align === 'end'
+        ? 'text-right'
+        : 'text-left';
+
   return (
-    <section className="mx-auto w-full max-w-6xl px-6">
+    <BlockSection block={block}>
       {(block.title || block.description) && (
-        <div className="mb-8 flex flex-col gap-2 text-center">
+        <div className={clsx('mb-8 flex flex-col gap-2', headingAlign)}>
           {block.title && <h2 className="font-display text-3xl text-secondary">{block.title}</h2>}
           {block.description && <p className="text-base text-gray-600">{block.description}</p>}
         </div>
@@ -36,6 +46,6 @@ export function DisciplinesGrid({block}: {block: DisciplinesGridBlock}) {
           </article>
         ))}
       </div>
-    </section>
+    </BlockSection>
   );
 }

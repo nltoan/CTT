@@ -11,7 +11,43 @@ export type MediaRef = {
   type?: 'image' | 'video';
 };
 
-export type HeroCountdownBlock = {
+export type BlockStyle = {
+  id?: string;
+  variant?: 'default' | 'muted' | 'contrast' | 'highlight' | 'accent';
+  container?: 'content' | 'wide' | 'narrow' | 'full' | 'edge';
+  align?: 'start' | 'center' | 'end';
+  spacing?: {
+    padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+    top?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+    bottom?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
+  };
+  divider?: 'none' | 'top' | 'bottom' | 'both';
+  background?: {
+    color?: string;
+    image?: MediaRef;
+    position?: 'top' | 'center' | 'bottom';
+    overlay?: 'light' | 'dark';
+  };
+  theme?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    background?: string;
+    text?: string;
+  };
+  visibility?: {
+    desktop?: boolean;
+    tablet?: boolean;
+    mobile?: boolean;
+  };
+};
+
+export type BlockBase = {
+  id?: string;
+  style?: BlockStyle;
+};
+
+export type HeroCountdownBlock = BlockBase & {
   type: 'hero-countdown';
   heading: string;
   subheading?: string;
@@ -24,7 +60,7 @@ export type HeroCountdownBlock = {
   countdownLabel?: string;
 };
 
-export type DisciplinesGridBlock = {
+export type DisciplinesGridBlock = BlockBase & {
   type: 'disciplines-grid';
   title?: string;
   description?: string;
@@ -36,7 +72,7 @@ export type DisciplinesGridBlock = {
   }[];
 };
 
-export type TimelineBlock = {
+export type TimelineBlock = BlockBase & {
   type: 'timeline';
   title?: string;
   description?: string;
@@ -47,7 +83,7 @@ export type TimelineBlock = {
   }[];
 };
 
-export type PrizesBlock = {
+export type PrizesBlock = BlockBase & {
   type: 'prizes';
   title?: string;
   description?: string;
@@ -58,7 +94,7 @@ export type PrizesBlock = {
   }[];
 };
 
-export type SponsorsGridBlock = {
+export type SponsorsGridBlock = BlockBase & {
   type: 'sponsors-grid';
   title?: string;
   description?: string;
@@ -71,7 +107,7 @@ export type SponsorsGridBlock = {
   }[];
 };
 
-export type PeopleGridBlock = {
+export type PeopleGridBlock = BlockBase & {
   type: 'people-grid';
   title?: string;
   description?: string;
@@ -84,7 +120,7 @@ export type PeopleGridBlock = {
   }[];
 };
 
-export type PostListBlock = {
+export type PostListBlock = BlockBase & {
   type: 'post-list';
   title?: string;
   description?: string;
@@ -95,7 +131,7 @@ export type PostListBlock = {
   };
 };
 
-export type EventListBlock = {
+export type EventListBlock = BlockBase & {
   type: 'event-list';
   title?: string;
   description?: string;
@@ -108,7 +144,7 @@ export type EventListBlock = {
   };
 };
 
-export type ContactBlock = {
+export type ContactBlock = BlockBase & {
   type: 'contact';
   title?: string;
   address?: string;
@@ -121,7 +157,7 @@ export type ContactBlock = {
   formKey?: string;
 };
 
-export type TestimonialsBlock = {
+export type TestimonialsBlock = BlockBase & {
   type: 'testimonials';
   title?: string;
   description?: string;
@@ -133,7 +169,7 @@ export type TestimonialsBlock = {
   }[];
 };
 
-export type ImageGalleryBlock = {
+export type ImageGalleryBlock = BlockBase & {
   type: 'image-gallery';
   title?: string;
   description?: string;
@@ -145,7 +181,7 @@ export type ImageGalleryBlock = {
   }[];
 };
 
-export type CtaButtonsBlock = {
+export type CtaButtonsBlock = BlockBase & {
   type: 'cta-buttons';
   title?: string;
   description?: string;
@@ -153,7 +189,7 @@ export type CtaButtonsBlock = {
   align?: 'start' | 'center';
 };
 
-export type SlideshowBlock = {
+export type SlideshowBlock = BlockBase & {
   type: 'slideshow';
   title?: string;
   description?: string;
@@ -171,7 +207,7 @@ export type SlideshowBlock = {
   };
 };
 
-export type RichContentBlock = {
+export type RichContentBlock = BlockBase & {
   type: 'rich-content';
   title?: string;
   content: string;

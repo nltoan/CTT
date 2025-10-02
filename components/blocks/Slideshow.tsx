@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import type {SlideshowBlock} from '@types/blocks';
 import type {Locale} from '@i18n/config';
+import {BlockSection} from './BlockSection';
 
 function resolveSlideHref({
   href,
@@ -89,7 +90,11 @@ export function Slideshow({
   const currentSlide = slides[activeIndex];
 
   return (
-    <section className="relative isolate overflow-hidden bg-secondary text-white">
+    <BlockSection
+      block={block}
+      disableDefaultContainer
+      className="relative isolate overflow-hidden bg-secondary text-white"
+    >
       <div className="absolute inset-0 opacity-30">
         <img
           src={currentSlide.image.url}
@@ -172,7 +177,7 @@ export function Slideshow({
           ) : null}
         </div>
       </div>
-    </section>
+    </BlockSection>
   );
 }
 

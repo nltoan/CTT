@@ -4,6 +4,7 @@ import {useEffect, useMemo, useState} from 'react';
 import type React from 'react';
 
 import type {HeroCountdownBlock} from '@types/blocks';
+import {BlockSection} from './BlockSection';
 
 function formatRemainingTime(deadline: string | undefined) {
   if (!deadline) {
@@ -52,12 +53,14 @@ export function HeroCountdown({
   }, [block.background]);
 
   return (
-    <section
-      className="relative overflow-hidden rounded-3xl bg-secondary px-6 py-16 text-white shadow-xl"
+    <BlockSection
+      block={block}
+      disableDefaultContainer
+      className="relative overflow-hidden rounded-3xl bg-secondary text-white shadow-xl"
       style={backgroundStyle}
     >
       {block.overlay && <div className="absolute inset-0 bg-black/70" aria-hidden="true" />}
-      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-start gap-6">
+      <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-start gap-6 px-6 py-16">
         {(block.subheading || block.countdownLabel) && (
           <div>
             <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1 text-sm tracking-wide uppercase">
@@ -100,6 +103,6 @@ export function HeroCountdown({
           )}
         </div>
       </div>
-    </section>
+    </BlockSection>
   );
 }
