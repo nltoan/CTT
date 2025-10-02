@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Be Vietnam Pro';
+  --font-body: 'Inter';
+  --color-primary: #d72638;
+  --color-secondary: #292f36;
+  --color-accent: #f5a623;
+}
+
+body {
+  @apply font-body bg-white text-gray-900 antialiased;
+}
+
+a {
+  @apply text-primary underline-offset-4 transition-colors hover:text-primary/80;
+}
+
+main {
+  @apply flex flex-col gap-16;
+}
