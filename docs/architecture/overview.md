@@ -174,6 +174,7 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /pages?tenant=&slug=`
 - `GET /posts`, `GET /posts/:slug`
 - `GET /events`
+- `GET /people`, `GET /sponsors`
 - `GET /navigations`
 - `GET /galleries/:id`, `GET /slideshows/:id`
 

@@ -1,4 +1,4 @@
-import type {Block} from './blocks';
+import type {Block, MediaRef} from './blocks';
 
 export type TenantSocialLink = {
   id: string;
@@ -73,5 +73,35 @@ export type Event = {
   startsAt: string;
   endsAt?: string;
   location?: string;
+  description?: string;
+};
+
+export type PersonSocialProfile = {
+  label: string;
+  url: string;
+  platform?: 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'website' | string;
+};
+
+export type Person = {
+  id: string;
+  slug: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  title?: string;
+  bio?: string;
+  order?: number;
+  photo?: MediaRef;
+  socialLinks?: PersonSocialProfile[];
+};
+
+export type Sponsor = {
+  id: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  tier?: 'gold' | 'silver' | 'bronze';
+  url?: string;
+  logo: MediaRef;
   description?: string;
 };

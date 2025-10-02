@@ -19,6 +19,16 @@ const mainNavigations: Navigation[] = ['vi', 'en'].flatMap((locale) => [
         href: '/events'
       },
       {
+        id: `people-${locale}`,
+        label: locale === 'vi' ? 'Giám khảo' : 'Jury',
+        href: '/people'
+      },
+      {
+        id: `partners-${locale}`,
+        label: locale === 'vi' ? 'Nhà tài trợ' : 'Partners',
+        href: '/partners'
+      },
+      {
         id: `about-${locale}`,
         label: locale === 'vi' ? 'Giới thiệu' : 'About',
         href: '/about'
@@ -59,6 +69,16 @@ const classicNavigations: Navigation[] = ['vi', 'en'].flatMap((locale) => [
         id: `classic-events-${locale}`,
         label: locale === 'vi' ? 'Lịch sự kiện' : 'Events',
         href: '/events'
+      },
+      {
+        id: `classic-people-${locale}`,
+        label: locale === 'vi' ? 'Giảng viên' : 'Faculty',
+        href: '/people'
+      },
+      {
+        id: `classic-partners-${locale}`,
+        label: locale === 'vi' ? 'Đối tác' : 'Partners',
+        href: '/partners'
       },
       {
         id: `classic-admissions-${locale}`,

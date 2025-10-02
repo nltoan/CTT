@@ -62,6 +62,7 @@ export type SponsorsGridBlock = {
   type: 'sponsors-grid';
   title?: string;
   description?: string;
+  emptyStateMessage?: string;
   items: {
     name: string;
     logo: MediaRef;
@@ -74,6 +75,7 @@ export type PeopleGridBlock = {
   type: 'people-grid';
   title?: string;
   description?: string;
+  emptyStateMessage?: string;
   items: {
     name: string;
     title?: string;

@@ -1,4 +1,6 @@
 import type {Page} from '@types/cms';
+import {listPeopleByTenant} from '@data/people';
+import {listSponsorsByTenant} from '@data/sponsors';
 import type {
   ContactBlock,
   DisciplinesGridBlock,
@@ -190,84 +192,49 @@ const createPrizesBlock = (locale: 'vi' | 'en'): PrizesBlock => ({
   ]
 });
 
-const createSponsorsBlock = (locale: 'vi' | 'en'): SponsorsGridBlock => ({
-  type: 'sponsors-grid',
-  title: locale === 'vi' ? 'Đối tác & nhà tài trợ' : 'Partners & sponsors',
-  description:
-    locale === 'vi'
-      ? 'Kết nối với các thương hiệu đồng hành cùng cuộc thi.'
-      : 'Meet the brands supporting our competition.',
-  items: [
-    {
-      name: 'Yamaha Music',
-      tier: 'gold',
-      url: 'https://yamaha.com',
-      logo: {
-        id: 'yamaha',
-        url: 'https://dummyimage.com/200x80/1f2937/ffffff&text=Yamaha',
-        alt: 'Yamaha logo'
-      }
-    },
-    {
-      name: 'Steinway & Sons',
-      tier: 'silver',
-      url: 'https://steinway.com',
-      logo: {
-        id: 'steinway',
-        url: 'https://dummyimage.com/200x80/111827/ffffff&text=Steinway',
-        alt: 'Steinway logo'
-      }
-    },
-    {
-      name: 'VN Airlines',
-      tier: 'bronze',
-      url: 'https://vietnamairlines.com',
-      logo: {
-        id: 'vna',
-        url: 'https://dummyimage.com/200x80/0f172a/ffffff&text=VN+Airlines',
-        alt: 'Vietnam Airlines logo'
-      }
-    }
-  ]
-});
+const createSponsorsBlock = (tenantId: string, locale: 'vi' | 'en'): SponsorsGridBlock => {
+  const sponsors = listSponsorsByTenant({tenantId, locale});
+  return {
+    type: 'sponsors-grid',
+    title: locale === 'vi' ? 'Đối tác & nhà tài trợ' : 'Partners & sponsors',
+    description:
+      locale === 'vi'
+        ? 'Kết nối với các thương hiệu đồng hành cùng cuộc thi.'
+        : 'Meet the brands supporting our competition.',
+    emptyStateMessage:
+      locale === 'vi'
+        ? 'Chưa có nhà tài trợ nào được công bố cho mùa giải này.'
+        : 'Sponsors for this season will be announced soon.',
+    items: sponsors.map((sponsor) => ({
+      name: sponsor.name,
+      logo: sponsor.logo,
+      tier: sponsor.tier,
+      url: sponsor.url
+    }))
+  };
+};
 
-const createPeopleBlock = (locale: 'vi' | 'en'): PeopleGridBlock => ({
-  type: 'people-grid',
-  title: locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury',
-  description:
-    locale === 'vi'
-      ? 'Đội ngũ chuyên gia uy tín đồng hành cùng thí sinh.'
-      : 'Esteemed artists and mentors accompanying contestants.',
-  items: [
-    {
-      name: 'Nguyễn Thu Hà',
-      title: locale === 'vi' ? 'Giám khảo trưởng - Piano' : 'Head Judge – Piano',
-      photo: {
-        id: 'judge-ha',
-        url: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39',
-        alt: 'Nguyen Thu Ha'
-      }
-    },
-    {
-      name: 'Trần Minh Quân',
-      title: locale === 'vi' ? 'Giám khảo - Violin' : 'Judge – Violin',
-      photo: {
-        id: 'judge-quan',
-        url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1',
-        alt: 'Tran Minh Quan'
-      }
-    },
-    {
-      name: 'Sarah Johnson',
-      title: locale === 'vi' ? 'Cố vấn nghệ thuật' : 'Artistic Advisor',
-      photo: {
-        id: 'advisor-sarah',
-        url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518',
-        alt: 'Sarah Johnson'
-      }
-    }
-  ]
-});
+const createPeopleBlock = (tenantId: string, locale: 'vi' | 'en'): PeopleGridBlock => {
+  const people = listPeopleByTenant({tenantId, locale});
+  return {
+    type: 'people-grid',
+    title: locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury',
+    description:
+      locale === 'vi'
+        ? 'Đội ngũ chuyên gia uy tín đồng hành cùng thí sinh.'
+        : 'Esteemed artists and mentors accompanying contestants.',
+    emptyStateMessage:
+      locale === 'vi'
+        ? 'Danh sách cố vấn và giám khảo sẽ được cập nhật trong thời gian tới.'
+        : 'The advisory and jury line-up will be revealed soon.',
+    items: people.map((person) => ({
+      name: person.name,
+      title: person.title,
+      bio: person.bio,
+      photo: person.photo
+    }))
+  };
+};
 
 const createTestimonialsBlock = (locale: 'vi' | 'en'): TestimonialsBlock => ({
   type: 'testimonials',
@@ -503,8 +470,8 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
       createGalleryBlock(locale),
       createTestimonialsBlock(locale),
       createPrizesBlock(locale),
-      createSponsorsBlock(locale),
-      createPeopleBlock(locale),
+      createSponsorsBlock('tenant-main', locale),
+      createPeopleBlock('tenant-main', locale),
       createPostListBlock(locale),
       createContactBlock(locale)
     ]
@@ -515,7 +482,23 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
     title: locale === 'vi' ? 'Giới thiệu' : 'About',
     tenantId: 'tenant-main',
     locale,
-    blocks: [createPeopleBlock(locale), createContactBlock(locale)]
+    blocks: [createPeopleBlock('tenant-main', locale), createContactBlock(locale)]
+  },
+  {
+    id: `people-${locale}`,
+    slug: 'people',
+    title: locale === 'vi' ? 'Ban cố vấn & Giám khảo' : 'Advisory & Jury',
+    tenantId: 'tenant-main',
+    locale,
+    blocks: [createPeopleBlock('tenant-main', locale)]
+  },
+  {
+    id: `partners-${locale}`,
+    slug: 'partners',
+    title: locale === 'vi' ? 'Đối tác & Nhà tài trợ' : 'Partners & Sponsors',
+    tenantId: 'tenant-main',
+    locale,
+    blocks: [createSponsorsBlock('tenant-main', locale), createContactBlock(locale)]
   },
   {
     id: `contact-${locale}`,
@@ -572,7 +555,7 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
       createTimelineBlock(locale),
       createRichContentBlock(locale),
       createTestimonialsBlock(locale),
-      createPeopleBlock(locale),
+      createPeopleBlock('tenant-classic', locale),
       createContactBlock(locale)
     ]
   },
@@ -582,7 +565,23 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
     title: locale === 'vi' ? 'Về học viện' : 'About the academy',
     tenantId: 'tenant-classic',
     locale,
-    blocks: [createPeopleBlock(locale), createContactBlock(locale)]
+    blocks: [createPeopleBlock('tenant-classic', locale), createContactBlock(locale)]
+  },
+  {
+    id: `classic-people-${locale}`,
+    slug: 'people',
+    title: locale === 'vi' ? 'Giảng viên & Cố vấn' : 'Faculty & Mentors',
+    tenantId: 'tenant-classic',
+    locale,
+    blocks: [createPeopleBlock('tenant-classic', locale)]
+  },
+  {
+    id: `classic-partners-${locale}`,
+    slug: 'partners',
+    title: locale === 'vi' ? 'Đối tác học viện' : 'Academy partners',
+    tenantId: 'tenant-classic',
+    locale,
+    blocks: [createSponsorsBlock('tenant-classic', locale), createContactBlock(locale)]
   }
 ]);
 
