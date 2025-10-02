@@ -56,6 +56,54 @@ const mainPosts: Post[] = ['vi', 'en'].flatMap((locale) => [
       locale === 'vi'
         ? ['dang-ky', 'thi-sinh']
         : ['registration', 'contestant']
+  },
+  {
+    id: `post-3-${locale}`,
+    translationKey: 'tenant-main-post-3',
+    slug: locale === 'vi' ? 'lich-trinh-vong-loai' : 'audition-schedule',
+    title:
+      locale === 'vi'
+        ? 'Lịch trình vòng loại và các mốc quan trọng'
+        : 'Audition schedule and key milestones',
+    excerpt:
+      locale === 'vi'
+        ? 'Theo dõi các mốc nộp hồ sơ, công bố kết quả và vòng chung kết.'
+        : 'Track submission deadlines, announcement dates and the live finals.',
+    publishedAt: '2024-12-28T09:30:00.000Z',
+    updatedAt: MAIN_POST_UPDATED_AT,
+    tenantId: 'tenant-main',
+    locale,
+    coverImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
+    author: DEFAULT_AUTHORS[locale],
+    category: locale === 'vi' ? 'Lịch trình' : 'Schedule',
+    tags:
+      locale === 'vi'
+        ? ['timeline', 'su-kien']
+        : ['timeline', 'events']
+  },
+  {
+    id: `post-4-${locale}`,
+    translationKey: 'tenant-main-post-4',
+    slug: locale === 'vi' ? 'chia-se-tu-quy-quan' : 'finalists-spotlight',
+    title:
+      locale === 'vi'
+        ? 'Chia sẻ từ các quán quân mùa trước'
+        : 'Insights from previous champions',
+    excerpt:
+      locale === 'vi'
+        ? 'Những câu chuyện truyền cảm hứng từ các thí sinh đạt giải cao.'
+        : 'Inspiring stories from laureates of past seasons.',
+    publishedAt: '2025-01-12T14:00:00.000Z',
+    updatedAt: MAIN_POST_UPDATED_AT,
+    tenantId: 'tenant-main',
+    locale,
+    coverImage: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0',
+    author: DEFAULT_AUTHORS[locale],
+    category: locale === 'vi' ? 'Câu chuyện' : 'Stories',
+    tags:
+      locale === 'vi'
+        ? ['nguoi-thang', 'truyen-cam-hung']
+        : ['winners', 'stories']
   }
 ]);
 
@@ -83,24 +131,162 @@ const classicPosts: Post[] = ['vi', 'en'].flatMap((locale) => [
       locale === 'vi'
         ? ['chuong-trinh', 'hoc-vien']
         : ['curriculum', 'academy']
+  },
+  {
+    id: `classic-post-2-${locale}`,
+    translationKey: 'tenant-classic-post-2',
+    slug: locale === 'vi' ? 'gap-go-giao-su-khach-moi' : 'meet-guest-professors',
+    title:
+      locale === 'vi'
+        ? 'Gặp gỡ các giáo sư khách mời mùa hè'
+        : 'Meet the summer guest professors',
+    excerpt:
+      locale === 'vi'
+        ? 'Giáo sư từ Juilliard, Royal College of Music và Nhạc viện Tokyo.'
+        : 'Professors from Juilliard, the Royal College of Music and Tokyo University of the Arts.',
+    publishedAt: '2025-02-25T07:45:00.000Z',
+    updatedAt: CLASSIC_POST_UPDATED_AT,
+    tenantId: 'tenant-classic',
+    locale,
+    coverImage: 'https://images.unsplash.com/photo-1454922915609-78549ad709bb',
+    author: DEFAULT_AUTHORS[locale],
+    category: locale === 'vi' ? 'Giảng viên' : 'Faculty',
+    tags:
+      locale === 'vi'
+        ? ['giao-su', 'khach-moi']
+        : ['professors', 'guest']
   }
 ]);
 
 export const posts: Post[] = [...mainPosts, ...classicPosts];
 
+type PostFilterInput = {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  category?: string;
+  tag?: string;
+  q?: string;
+};
+
+function filterPosts({tenantId, locale, category, tag, q}: PostFilterInput) {
+  const normalizedCategory = category?.toLowerCase();
+  const normalizedTag = tag?.toLowerCase();
+  const normalizedQuery = q?.toLowerCase();
+
+  return posts
+    .filter((post) => post.tenantId === tenantId && post.locale === locale)
+    .filter((post) => {
+      if (!normalizedCategory) {
+        return true;
+      }
+      return post.category?.toLowerCase() === normalizedCategory;
+    })
+    .filter((post) => {
+      if (!normalizedTag) {
+        return true;
+      }
+      return post.tags?.some((tagItem) => tagItem.toLowerCase() === normalizedTag) ?? false;
+    })
+    .filter((post) => {
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      const haystack = [post.title, post.excerpt, post.category, post.author, ...(post.tags ?? [])]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(normalizedQuery);
+    })
+    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
+}
+
 export function listPostsByTenant({
   tenantId,
   locale,
-  limit
+  limit,
+  category,
+  tag,
+  q
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   limit?: number;
+  category?: string;
+  tag?: string;
+  q?: string;
 }) {
-  return posts
-    .filter((post) => post.tenantId === tenantId && post.locale === locale)
-    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
-    .slice(0, limit ?? posts.length);
+  const filtered = filterPosts({tenantId, locale, category, tag, q});
+  return filtered.slice(0, limit ?? filtered.length);
+}
+
+export function searchPostsByTenant({
+  tenantId,
+  locale,
+  page = 1,
+  limit = 10,
+  category,
+  tag,
+  q
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  page?: number;
+  limit?: number;
+  category?: string;
+  tag?: string;
+  q?: string;
+}) {
+  const computedLimit = typeof limit === 'number' && !Number.isNaN(limit) ? limit : 10;
+  const safeLimit = Math.max(1, Math.min(computedLimit, 50));
+  const computedPage = typeof page === 'number' && !Number.isNaN(page) ? page : 1;
+  const safePage = Math.max(1, computedPage);
+  const filtered = filterPosts({tenantId, locale, category, tag, q});
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+  const normalizedPage = Math.min(safePage, totalPages);
+  const start = (normalizedPage - 1) * safeLimit;
+  const items = filtered.slice(start, start + safeLimit);
+
+  return {
+    items,
+    total,
+    page: normalizedPage,
+    limit: safeLimit,
+    totalPages,
+    hasMore: start + safeLimit < total
+  };
+}
+
+export function listPostCategories({
+  tenantId,
+  locale
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+}) {
+  const filtered = filterPosts({tenantId, locale});
+  return Array.from(
+    new Set(
+      filtered
+        .map((post) => post.category)
+        .filter((category): category is string => Boolean(category))
+    )
+  ).sort((a, b) => a.localeCompare(b));
+}
+
+export function listPostTags({
+  tenantId,
+  locale
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+}) {
+  const filtered = filterPosts({tenantId, locale});
+  return Array.from(
+    new Set(filtered.flatMap((post) => post.tags ?? []).filter((tag): tag is string => Boolean(tag)))
+  ).sort((a, b) => a.localeCompare(b));
 }
 
 export function findPostBySlug({
@@ -127,4 +313,36 @@ export function findPostTranslations({
   return posts.filter(
     (post) => post.tenantId === tenantId && post.translationKey === translationKey
   );
+}
+
+export function findRelatedPosts({
+  tenantId,
+  locale,
+  postId,
+  category,
+  tags,
+  limit = 3
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  postId: string;
+  category?: string;
+  tags?: string[];
+  limit?: number;
+}) {
+  const tagSet = new Set((tags ?? []).map((tag) => tag.toLowerCase()));
+
+  const filtered = filterPosts({tenantId, locale})
+    .filter((post) => post.id !== postId)
+    .filter((post) => {
+      if (category && post.category === category) {
+        return true;
+      }
+      if (!tagSet.size || !post.tags?.length) {
+        return false;
+      }
+      return post.tags.some((tag) => tagSet.has(tag.toLowerCase()));
+    });
+
+  return filtered.slice(0, limit);
 }

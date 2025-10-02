@@ -1,4 +1,4 @@
-import {getPost} from '@lib/pages';
+import {getPost, getRelatedPosts} from '@lib/pages';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
@@ -20,11 +20,20 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
     });
   }
 
+  const related = await getRelatedPosts({
+    tenantId: tenant.id,
+    locale,
+    postId: post.id,
+    category: post.category,
+    tags: post.tags,
+    limit: 3
+  });
+
   const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
 
   return jsonResponseWithCache({
     request,
-    body: {data: post},
+    body: {data: post, related},
     ttl,
     cacheTags: [`tenant:${tenant.id}`, `post:${post.id}`]
   });

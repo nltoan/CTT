@@ -136,7 +136,8 @@ export function createCollectionMetadata({
   slugSegments,
   title,
   description,
-  settings
+  settings,
+  searchParams
 }: {
   tenant: Tenant;
   locale: 'vi' | 'en';
@@ -145,8 +146,14 @@ export function createCollectionMetadata({
   title: string;
   description: string;
   settings?: ResolvedSiteSettings;
+  searchParams?: Record<string, string>;
 }): Metadata {
-  const canonicalPath = buildPath({locale, tenantPath, slugSegments});
+  const basePath = buildPath({locale, tenantPath, slugSegments});
+  const queryEntries = Object.entries(searchParams ?? {}).filter(([, value]) =>
+    Boolean(value?.trim())
+  ) as [string, string][];
+  const queryString = queryEntries.length ? `?${new URLSearchParams(queryEntries).toString()}` : '';
+  const canonicalPath = `${basePath}${queryString}`;
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
   const defaults = settings?.seo ?? {};
   const image = resolveImage(undefined, tenant, defaults.image);
@@ -158,7 +165,8 @@ export function createCollectionMetadata({
         tenantPath,
         slugSegments
       });
-      return [availableLocale, buildAbsoluteUrl(path)];
+      const localizedPath = `${path}${queryString}`;
+      return [availableLocale, buildAbsoluteUrl(localizedPath)];
     })
   );
 

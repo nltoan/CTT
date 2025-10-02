@@ -1,8 +1,9 @@
 import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
+import Link from 'next/link';
 
 import {PageShell} from '@components/layout/PageShell';
-import {getNavigation, getPost} from '@lib/pages';
+import {getNavigation, getPost, getRelatedPosts} from '@lib/pages';
 import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant} from '@lib/settings';
@@ -44,9 +45,17 @@ export default async function TenantNewsDetail({
 
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
-  const [headerNavigation, footerNavigation] = await Promise.all([
+  const [headerNavigation, footerNavigation, relatedPosts] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
-    getNavigation({tenantId: tenant.id, key: 'footer', locale})
+    getNavigation({tenantId: tenant.id, key: 'footer', locale}),
+    getRelatedPosts({
+      tenantId: tenant.id,
+      locale,
+      postId: post.id,
+      category: post.category,
+      tags: post.tags,
+      limit: 3
+    })
   ]);
 
   const articleJsonLd = buildArticleJsonLd({post, tenant, locale, tenantPath, settings});
@@ -106,8 +115,53 @@ export default async function TenantNewsDetail({
               </p>
             )}
           </div>
+          {post.tags?.length ? (
+            <div className="flex flex-wrap gap-2 pt-4">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </article>
+      {relatedPosts.length ? (
+        <aside className="bg-slate-50 py-16">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-6">
+            <h2 className="text-2xl font-semibold text-secondary">
+              {locale === 'vi' ? 'Bài viết liên quan' : 'Related articles'}
+            </h2>
+            <div className="grid gap-4 md:grid-cols-3">
+              {relatedPosts.map((related) => (
+                <article
+                  key={related.id}
+                  className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <time className="text-xs uppercase tracking-wide text-primary">
+                    {new Date(related.publishedAt).toLocaleDateString(
+                      locale === 'en' ? 'en-US' : 'vi-VN'
+                    )}
+                  </time>
+                  <h3 className="mt-2 text-base font-semibold text-secondary">{related.title}</h3>
+                  {related.excerpt && (
+                    <p className="mt-2 text-xs text-gray-600">{related.excerpt}</p>
+                  )}
+                  <Link
+                    href={`/${locale}${tenantPath}/news/${related.slug}`}
+                    className="mt-3 inline-flex items-center text-xs font-medium text-primary hover:opacity-80"
+                  >
+                    {locale === 'vi' ? 'Đọc ngay' : 'Read article'} →
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </div>
+        </aside>
+      ) : null}
     </PageShell>
   );
 }

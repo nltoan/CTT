@@ -169,6 +169,14 @@ Các block UI đã được scaffold trong frontend gồm: `hero-countdown`, `ct
 
 Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) để điều chỉnh container, khoảng cách, màu nền/overlay, override CSS variables và giới hạn hiển thị theo breakpoint. Wrapper `components/blocks/BlockSection.tsx` đọc `style` và áp dụng class/inline-style tương ứng; `PageRenderer` bỏ qua block nếu `style.visibility` tắt cả `mobile`/`tablet`/`desktop`.
 
+### Trang Tin tức & phân trang
+
+- Route `/[locale]/news` (và biến thể `/[locale]/t/[tenant]/news`) đọc `searchParams` để áp dụng bộ lọc `q`, `category`, `tag` và phân trang `page`.
+- Server component gọi `getPostListing` (wrapper `searchPostsByTenant`) trả về `{items, total, totalPages, page, hasMore}` để render danh sách.
+- Bộ lọc hiển thị dạng chip, form tìm kiếm GET, nút “Xóa bộ lọc”; canonical URL bổ sung query string cần thiết cho SEO/hreflang.
+- Component `components/layout/Pagination.tsx` render prev/next + số trang, hỗ trợ locale để đổi label.
+- Trang chi tiết `/news/[slug]` hiển thị danh sách tag của bài viết và module “Bài viết liên quan” dựa trên category/tag chung (`getRelatedPosts`).
+
 Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
 
 ## API Public Layer
@@ -176,7 +184,7 @@ Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu 
 CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /tenants/:slug`
 - `GET /pages?tenant=&slug=`
-- `GET /posts`, `GET /posts/:slug`
+- `GET /posts` (hỗ trợ `page`, `limit`, `category`, `tag`, `q`, trả kèm `meta` tổng số bài viết và số trang), `GET /posts/:slug` (bao gồm mảng `related`)
 - `GET /events`
 - `GET /people`, `GET /sponsors`
 - `GET /settings`

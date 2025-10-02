@@ -19,7 +19,12 @@ import type {FormView} from '@types/forms';
 import type {Locale} from '@i18n/config';
 import {getFormView} from '@lib/forms';
 
-type PostLookup = (limit?: number) => Promise<Post[]>;
+type PostLookup = (query?: {
+  limit?: number;
+  category?: string;
+  tag?: string;
+  q?: string;
+}) => Promise<Post[]>;
 type EventLookup = (options?: {from?: Date; to?: Date; limit?: number}) => Promise<Event[]>;
 
 function isHiddenEverywhere(block: Block) {
@@ -51,7 +56,7 @@ export async function PageRenderer({
   const resolvedBlocks = await Promise.all(
     visibleBlocks.map(async (block) => {
       if (block.type === 'post-list') {
-        const posts = await getPosts(block.query?.limit);
+        const posts = await getPosts(block.query);
         return {block, posts};
       }
       if (block.type === 'event-list') {

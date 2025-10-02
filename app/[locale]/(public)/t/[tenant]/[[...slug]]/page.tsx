@@ -66,7 +66,16 @@ export default async function TenantPage({
       <PageRenderer
         blocks={page.blocks}
         locale={locale}
-        getPosts={(limit) => getRecentPosts({tenantId: tenant.id, locale, limit})}
+        getPosts={(query) =>
+          getRecentPosts({
+            tenantId: tenant.id,
+            locale,
+            limit: query?.limit,
+            category: query?.category,
+            tag: query?.tag,
+            q: query?.q
+          })
+        }
         getEvents={(options) =>
           getEventsForTenant({
             tenantId: tenant.id,

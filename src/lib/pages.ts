@@ -1,6 +1,13 @@
 import {findPageBySlug} from '@data/pages';
 import {findNavigation} from '@data/navigations';
-import {findPostBySlug, listPostsByTenant} from '@data/posts';
+import {
+  findPostBySlug,
+  findRelatedPosts,
+  listPostCategories,
+  listPostsByTenant,
+  listPostTags,
+  searchPostsByTenant
+} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
 import type {Page} from '@types/cms';
 
@@ -31,13 +38,39 @@ export async function getNavigation({
 export async function getRecentPosts({
   tenantId,
   locale,
-  limit
+  limit,
+  category,
+  tag,
+  q
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   limit?: number;
+  category?: string;
+  tag?: string;
+  q?: string;
 }) {
-  return listPostsByTenant({tenantId, locale, limit});
+  return listPostsByTenant({tenantId, locale, limit, category, tag, q});
+}
+
+export async function getPostListing({
+  tenantId,
+  locale,
+  page,
+  limit,
+  category,
+  tag,
+  q
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  page?: number;
+  limit?: number;
+  category?: string;
+  tag?: string;
+  q?: string;
+}) {
+  return searchPostsByTenant({tenantId, locale, page, limit, category, tag, q});
 }
 
 export async function getPost({
@@ -50,6 +83,24 @@ export async function getPost({
   slug: string;
 }) {
   return findPostBySlug({tenantId, locale, slug});
+}
+
+export async function getRelatedPosts({
+  tenantId,
+  locale,
+  postId,
+  category,
+  tags,
+  limit
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  postId: string;
+  category?: string;
+  tags?: string[];
+  limit?: number;
+}) {
+  return findRelatedPosts({tenantId, locale, postId, category, tags, limit});
 }
 
 export async function getEvents({
@@ -80,3 +131,18 @@ export type PageWithNavigation = Page & {
   headerNavigation?: Awaited<ReturnType<typeof getNavigation>>;
   footerNavigation?: Awaited<ReturnType<typeof getNavigation>>;
 };
+
+export async function getPostFilters({
+  tenantId,
+  locale
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+}) {
+  const [categories, tags] = await Promise.all([
+    listPostCategories({tenantId, locale}),
+    listPostTags({tenantId, locale})
+  ]);
+
+  return {categories, tags};
+}

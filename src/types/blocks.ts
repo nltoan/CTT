@@ -125,9 +125,12 @@ export type PostListBlock = BlockBase & {
   title?: string;
   description?: string;
   ctaLabel?: string;
+  emptyStateMessage?: string;
   query?: {
     limit?: number;
     category?: string;
+    tag?: string;
+    q?: string;
   };
 };
 
