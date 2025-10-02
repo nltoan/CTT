@@ -3,6 +3,7 @@ import {SiteHeader} from './SiteHeader';
 
 import type {Navigation, Tenant} from '@types/cms';
 import {getTenantThemeCssVariables} from '@lib/tenant';
+import {buildOrganizationJsonLd, buildSiteNavigationJsonLd} from '@lib/seo';
 
 export function PageShell({
   tenant,
@@ -19,6 +20,13 @@ export function PageShell({
   tenantPath?: string;
   children: React.ReactNode;
 }) {
+  const organizationJsonLd = buildOrganizationJsonLd({tenant, locale, tenantPath});
+  const navigationJsonLd = buildSiteNavigationJsonLd({
+    navigation: headerNavigation,
+    locale,
+    tenantPath
+  });
+
   return (
     <div
       className="flex min-h-screen flex-col font-body"
@@ -33,6 +41,16 @@ export function PageShell({
       />
       <div className="flex-1">{children}</div>
       <SiteFooter tenant={tenant} navigation={footerNavigation} locale={locale} tenantPath={tenantPath} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(organizationJsonLd)}}
+      />
+      {navigationJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(navigationJsonLd)}}
+        />
+      )}
     </div>
   );
 }

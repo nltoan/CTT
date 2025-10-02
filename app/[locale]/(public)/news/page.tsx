@@ -1,10 +1,38 @@
+import type {Metadata} from 'next';
 import Link from 'next/link';
 
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getRecentPosts} from '@lib/pages';
+import {createCollectionMetadata, buildNewsListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 export const dynamic = 'force-static';
+
+export async function generateMetadata({
+  params
+}: {
+  params: {locale: 'vi' | 'en'; tenant?: string};
+}): Promise<Metadata> {
+  const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
+    params,
+    locale: params.locale
+  });
+
+  const title = locale === 'vi' ? 'Tin tức' : 'News';
+  const description =
+    locale === 'vi'
+      ? 'Cập nhật thông tin mới nhất về cuộc thi và các hoạt động âm nhạc.'
+      : 'Stay updated with the latest announcements and stories.';
+
+  return createCollectionMetadata({
+    tenant,
+    locale,
+    tenantPath,
+    slugSegments: ['news'],
+    title,
+    description
+  });
+}
 
 export default async function NewsIndex({
   params
@@ -21,6 +49,8 @@ export default async function NewsIndex({
     getRecentPosts({tenantId: tenant.id, locale})
   ]);
 
+  const newsListJsonLd = buildNewsListJsonLd({posts, tenant, locale, tenantPath});
+
   return (
     <PageShell
       tenant={tenant}
@@ -29,6 +59,12 @@ export default async function NewsIndex({
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
     >
+      {newsListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(newsListJsonLd)}}
+        />
+      )}
       <section className="bg-slate-50 py-16">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6">
           <header className="space-y-3 text-center">

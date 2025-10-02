@@ -1,9 +1,38 @@
+import type {Metadata} from 'next';
+
 import {EventList} from '@components/blocks/EventList';
 import {PageShell} from '@components/layout/PageShell';
 import {getEvents, getNavigation} from '@lib/pages';
+import {createCollectionMetadata, buildEventsGraphJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 export const dynamic = 'force-static';
+
+export async function generateMetadata({
+  params
+}: {
+  params: {locale: 'vi' | 'en'; tenant: string};
+}): Promise<Metadata> {
+  const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
+    params,
+    locale: params.locale
+  });
+
+  const title = locale === 'vi' ? 'Sự kiện & lịch trình' : 'Events & schedule';
+  const description =
+    locale === 'vi'
+      ? 'Theo dõi đầy đủ các mốc audition, workshop và concert quan trọng của cuộc thi.'
+      : 'Explore every upcoming audition, workshop, and concert for the competition.';
+
+  return createCollectionMetadata({
+    tenant,
+    locale,
+    tenantPath,
+    slugSegments: ['events'],
+    title,
+    description
+  });
+}
 
 const buildEventBlock = (locale: 'vi' | 'en') => ({
   type: 'event-list' as const,
@@ -34,6 +63,13 @@ export default async function TenantEventsIndex({
     getEvents({tenantId: tenant.id, locale})
   ]);
 
+  const eventsJsonLd = buildEventsGraphJsonLd({
+    events,
+    tenant,
+    locale,
+    tenantPath
+  });
+
   return (
     <PageShell
       tenant={tenant}
@@ -42,6 +78,12 @@ export default async function TenantEventsIndex({
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
     >
+      {eventsJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(eventsJsonLd)}}
+        />
+      )}
       <EventList block={buildEventBlock(locale)} events={events} locale={locale} tenantPath={tenantPath} />
     </PageShell>
   );

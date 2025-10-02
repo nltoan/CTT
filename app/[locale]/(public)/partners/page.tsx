@@ -1,7 +1,10 @@
+import type {Metadata} from 'next';
+
 import {SponsorsGrid} from '@components/blocks/SponsorsGrid';
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation} from '@lib/pages';
 import {getSponsors} from '@lib/people';
+import {createCollectionMetadata, buildSponsorsJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 const buildBaseBlock = (locale: 'vi' | 'en') => ({
@@ -18,6 +21,32 @@ const buildBaseBlock = (locale: 'vi' | 'en') => ({
 });
 
 export const dynamic = 'force-static';
+
+export async function generateMetadata({
+  params
+}: {
+  params: {locale: 'vi' | 'en'; tenant?: string};
+}): Promise<Metadata> {
+  const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
+    params,
+    locale: params.locale
+  });
+
+  const title = locale === 'vi' ? 'Đối tác & nhà tài trợ' : 'Partners & sponsors';
+  const description =
+    locale === 'vi'
+      ? 'Các thương hiệu và tổ chức đồng hành cùng chương trình CTT.'
+      : 'Brands and organisations supporting the CTT programme.';
+
+  return createCollectionMetadata({
+    tenant,
+    locale,
+    tenantPath,
+    slugSegments: ['partners'],
+    title,
+    description
+  });
+}
 
 export default async function PartnersIndex({
   params
@@ -45,6 +74,8 @@ export default async function PartnersIndex({
     }))
   };
 
+  const sponsorsJsonLd = buildSponsorsJsonLd({sponsors, tenant, locale, tenantPath});
+
   return (
     <PageShell
       tenant={tenant}
@@ -53,6 +84,12 @@ export default async function PartnersIndex({
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
     >
+      {sponsorsJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(sponsorsJsonLd)}}
+        />
+      )}
       <SponsorsGrid block={block} />
     </PageShell>
   );

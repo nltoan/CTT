@@ -43,9 +43,11 @@ export type Page = {
   id: string;
   slug: string;
   title: string;
+  translationKey: string;
   tenantId: string;
   locale: 'vi' | 'en';
   blocks: Block[];
+  updatedAt?: string;
   seo?: {
     title?: string;
     description?: string;
@@ -57,12 +59,17 @@ export type Post = {
   id: string;
   slug: string;
   title: string;
+  translationKey: string;
   excerpt?: string;
   coverImage?: string;
   content?: string;
   publishedAt: string;
+  updatedAt?: string;
   tenantId: string;
   locale: 'vi' | 'en';
+  author?: string;
+  tags?: string[];
+  category?: string;
 };
 
 export type Event = {

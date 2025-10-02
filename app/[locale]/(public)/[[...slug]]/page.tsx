@@ -8,6 +8,7 @@ import {
   getRecentPosts,
   getEvents as getEventsForTenant
 } from '@lib/pages';
+import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 export async function generateMetadata({
@@ -25,10 +26,7 @@ export async function generateMetadata({
     return {};
   }
 
-  return {
-    title: page.seo?.title ?? page.title,
-    description: page.seo?.description ?? tenant.description
-  };
+  return createPageMetadata({page, tenant, locale, tenantPath});
 }
 
 export default async function Page({

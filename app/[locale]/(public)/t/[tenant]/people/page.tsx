@@ -1,7 +1,10 @@
+import type {Metadata} from 'next';
+
 import {PeopleGrid} from '@components/blocks/PeopleGrid';
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation} from '@lib/pages';
 import {getPeople} from '@lib/people';
+import {createCollectionMetadata, buildPeopleJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 const buildBaseBlock = (locale: 'vi' | 'en') => ({
@@ -18,6 +21,32 @@ const buildBaseBlock = (locale: 'vi' | 'en') => ({
 });
 
 export const dynamic = 'force-static';
+
+export async function generateMetadata({
+  params
+}: {
+  params: {locale: 'vi' | 'en'; tenant: string};
+}): Promise<Metadata> {
+  const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
+    params,
+    locale: params.locale
+  });
+
+  const title = locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury';
+  const description =
+    locale === 'vi'
+      ? 'Những nghệ sĩ và nhà sư phạm đồng hành cùng thí sinh trong suốt hành trình.'
+      : 'Artists and pedagogues mentoring contestants throughout their journey.';
+
+  return createCollectionMetadata({
+    tenant,
+    locale,
+    tenantPath,
+    slugSegments: ['people'],
+    title,
+    description
+  });
+}
 
 export default async function TenantPeopleIndex({
   params
@@ -45,6 +74,8 @@ export default async function TenantPeopleIndex({
     }))
   };
 
+  const peopleJsonLd = buildPeopleJsonLd({people, tenant, locale, tenantPath});
+
   return (
     <PageShell
       tenant={tenant}
@@ -53,6 +84,12 @@ export default async function TenantPeopleIndex({
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
     >
+      {peopleJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(peopleJsonLd)}}
+        />
+      )}
       <PeopleGrid block={block} />
     </PageShell>
   );

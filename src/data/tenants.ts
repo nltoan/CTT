@@ -12,6 +12,7 @@ export const tenants: Tenant[] = [
     accentColor: '#f5a623',
     fontDisplay: '"Playfair Display", serif',
     fontBody: 'Inter, sans-serif',
+    logoUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',
     locales: ['vi', 'en'],
     domain: 'cimfc.local',
     socialLinks: [
@@ -31,6 +32,7 @@ export const tenants: Tenant[] = [
     accentColor: '#f59e0b',
     fontDisplay: '"Cormorant Garamond", serif',
     fontBody: '"Source Sans Pro", sans-serif',
+    logoUrl: 'https://images.unsplash.com/photo-1454922915609-78549ad709bb',
     locales: ['vi', 'en'],
     domain: 'classic.cimfc.local',
     socialLinks: [

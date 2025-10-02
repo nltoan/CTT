@@ -199,8 +199,10 @@ Payload nên gửi kèm `secret` (khớp `REVALIDATE_SECRET`) và có thể mở
 - Lưu `translations` cho mỗi field text trong CMS (`vi`, `en`).
 - Frontend dùng `next-intl` với file messages UI + dynamic content.
 - Render `<link rel="alternate" hrefLang="vi">` & `en`.
-- Sitemap generator per tenant: `app/sitemap.ts` lấy data `pages`, `posts`, `events`.
-- Structured data JSON-LD: `Organization`, `Breadcrumb`, `Article`, `Event`.
+- Metadata helper `src/lib/seo.ts` sinh canonical URL, Open Graph/Twitter card, alternates hreflang, JSON-LD và tái sử dụng cho page/post/collection.
+- Sitemap generator per tenant: `app/sitemap.ts` lấy data `pages`, `posts`, `events`, tự động tính `priority`/`lastModified`.
+- Structured data JSON-LD: `Organization`, `SiteNavigation`, `Breadcrumb`, `Article`, `Event`, `ItemList` cho news/people/sponsors.
+- Robots.txt: `app/robots.ts` dùng `NEXT_PUBLIC_SITE_URL` (hoặc `SITE_URL`) để xuất `Host` và `Sitemap`.
 
 ## Hiệu năng & A11y
 

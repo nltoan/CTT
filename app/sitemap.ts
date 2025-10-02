@@ -1,0 +1,80 @@
+import type {MetadataRoute} from 'next';
+
+import {tenants} from '@data/tenants';
+import {listPagesByTenant} from '@data/pages';
+import {listPostsByTenant} from '@data/posts';
+import {listEventsByTenant} from '@data/events';
+import {buildAbsoluteUrl, buildPath} from '@lib/seo';
+
+function toDate(value?: string) {
+  return value ? new Date(value) : undefined;
+}
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const entries: MetadataRoute.Sitemap = [];
+
+  tenants.forEach((tenant) => {
+    const tenantPath = tenant.slug === 'main' ? '' : `/t/${tenant.slug}`;
+
+    tenant.locales.forEach((locale) => {
+      const pages = listPagesByTenant({tenantId: tenant.id, locale});
+      pages.forEach((page) => {
+        const slugSegments = page.slug ? page.slug.split('/').filter(Boolean) : [];
+        const path = buildPath({locale, tenantPath, slugSegments});
+        entries.push({
+          url: buildAbsoluteUrl(path),
+          lastModified: toDate(page.updatedAt),
+          changeFrequency: 'weekly',
+          priority: slugSegments.length === 0 ? 1 : 0.7
+        });
+      });
+
+      const posts = listPostsByTenant({tenantId: tenant.id, locale});
+      posts.forEach((post) => {
+        const path = buildPath({locale, tenantPath, slugSegments: ['news', post.slug]});
+        entries.push({
+          url: buildAbsoluteUrl(path),
+          lastModified: toDate(post.updatedAt ?? post.publishedAt),
+          changeFrequency: 'monthly',
+          priority: 0.6
+        });
+      });
+
+      const newsPath = buildPath({locale, tenantPath, slugSegments: ['news']});
+      const latestPost = posts[0];
+      entries.push({
+        url: buildAbsoluteUrl(newsPath),
+        lastModified: toDate(latestPost?.updatedAt ?? latestPost?.publishedAt),
+        changeFrequency: 'weekly',
+        priority: 0.8
+      });
+
+      const events = listEventsByTenant({tenantId: tenant.id, locale});
+      const eventsPath = buildPath({locale, tenantPath, slugSegments: ['events']});
+      entries.push({
+        url: buildAbsoluteUrl(eventsPath),
+        lastModified: events[0]?.startsAt ? new Date(events[0].startsAt) : undefined,
+        changeFrequency: 'weekly',
+        priority: 0.75
+      });
+
+      const peoplePath = buildPath({locale, tenantPath, slugSegments: ['people']});
+      entries.push({
+        url: buildAbsoluteUrl(peoplePath),
+        lastModified: toDate(pages.find((page) => page.slug === 'people')?.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.7
+      });
+
+      const partnersPath = buildPath({locale, tenantPath, slugSegments: ['partners']});
+      entries.push({
+        url: buildAbsoluteUrl(partnersPath),
+        lastModified: toDate(pages.find((page) => page.slug === 'partners')?.updatedAt),
+        changeFrequency: 'monthly',
+        priority: 0.6
+      });
+    });
+  });
+
+  return entries;
+}

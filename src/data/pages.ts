@@ -18,6 +18,9 @@ import type {
   RichContentBlock
 } from '@types/blocks';
 
+const MAIN_CONTENT_UPDATED_AT = '2025-01-20T00:00:00.000Z';
+const CLASSIC_CONTENT_UPDATED_AT = '2025-01-20T00:00:00.000Z';
+
 const heroBlock = (locale: 'vi' | 'en'): HeroCountdownBlock => ({
   type: 'hero-countdown',
   heading:
@@ -455,10 +458,12 @@ const createEventListBlock = (locale: 'vi' | 'en'): EventListBlock => ({
 const mainPages = ['vi', 'en'].flatMap((locale) => [
   {
     id: `home-${locale}`,
+    translationKey: 'tenant-main-home',
     slug: '',
     title: locale === 'vi' ? 'Trang chủ' : 'Home',
     tenantId: 'tenant-main',
     locale,
+    updatedAt: MAIN_CONTENT_UPDATED_AT,
     blocks: [
       heroBlock(locale),
       createCtaBlock(locale),
@@ -478,34 +483,42 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
   },
   {
     id: `about-${locale}`,
+    translationKey: 'tenant-main-about',
     slug: 'about',
     title: locale === 'vi' ? 'Giới thiệu' : 'About',
     tenantId: 'tenant-main',
     locale,
+    updatedAt: MAIN_CONTENT_UPDATED_AT,
     blocks: [createPeopleBlock('tenant-main', locale), createContactBlock(locale)]
   },
   {
     id: `people-${locale}`,
+    translationKey: 'tenant-main-people',
     slug: 'people',
     title: locale === 'vi' ? 'Ban cố vấn & Giám khảo' : 'Advisory & Jury',
     tenantId: 'tenant-main',
     locale,
+    updatedAt: MAIN_CONTENT_UPDATED_AT,
     blocks: [createPeopleBlock('tenant-main', locale)]
   },
   {
     id: `partners-${locale}`,
+    translationKey: 'tenant-main-partners',
     slug: 'partners',
     title: locale === 'vi' ? 'Đối tác & Nhà tài trợ' : 'Partners & Sponsors',
     tenantId: 'tenant-main',
     locale,
+    updatedAt: MAIN_CONTENT_UPDATED_AT,
     blocks: [createSponsorsBlock('tenant-main', locale), createContactBlock(locale)]
   },
   {
     id: `contact-${locale}`,
+    translationKey: 'tenant-main-contact',
     slug: 'contact',
     title: locale === 'vi' ? 'Liên hệ' : 'Contact',
     tenantId: 'tenant-main',
     locale,
+    updatedAt: MAIN_CONTENT_UPDATED_AT,
     blocks: [createContactBlock(locale)]
   }
 ]);
@@ -542,10 +555,12 @@ const classicHeroBlock = (locale: 'vi' | 'en'): HeroCountdownBlock => ({
 const classicPages = ['vi', 'en'].flatMap((locale) => [
   {
     id: `classic-home-${locale}`,
+    translationKey: 'tenant-classic-home',
     slug: '',
     title: locale === 'vi' ? 'Trang chủ' : 'Home',
     tenantId: 'tenant-classic',
     locale,
+    updatedAt: CLASSIC_CONTENT_UPDATED_AT,
     blocks: [
       classicHeroBlock(locale),
       createCtaBlock(locale),
@@ -561,31 +576,49 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
   },
   {
     id: `classic-about-${locale}`,
+    translationKey: 'tenant-classic-about',
     slug: 'about',
     title: locale === 'vi' ? 'Về học viện' : 'About the academy',
     tenantId: 'tenant-classic',
     locale,
+    updatedAt: CLASSIC_CONTENT_UPDATED_AT,
     blocks: [createPeopleBlock('tenant-classic', locale), createContactBlock(locale)]
   },
   {
     id: `classic-people-${locale}`,
+    translationKey: 'tenant-classic-people',
     slug: 'people',
     title: locale === 'vi' ? 'Giảng viên & Cố vấn' : 'Faculty & Mentors',
     tenantId: 'tenant-classic',
     locale,
+    updatedAt: CLASSIC_CONTENT_UPDATED_AT,
     blocks: [createPeopleBlock('tenant-classic', locale)]
   },
   {
     id: `classic-partners-${locale}`,
+    translationKey: 'tenant-classic-partners',
     slug: 'partners',
     title: locale === 'vi' ? 'Đối tác học viện' : 'Academy partners',
     tenantId: 'tenant-classic',
     locale,
+    updatedAt: CLASSIC_CONTENT_UPDATED_AT,
     blocks: [createSponsorsBlock('tenant-classic', locale), createContactBlock(locale)]
   }
 ]);
 
 export const pages: Page[] = [...mainPages, ...classicPages];
+
+export function listPagesByTenant({
+  tenantId,
+  locale
+}: {
+  tenantId: string;
+  locale?: 'vi' | 'en';
+}) {
+  return pages.filter(
+    (page) => page.tenantId === tenantId && (!locale || page.locale === locale)
+  );
+}
 
 export function findPageBySlug({
   tenantId,
@@ -601,5 +634,17 @@ export function findPageBySlug({
       page.tenantId === tenantId &&
       page.locale === locale &&
       (page.slug === slug || (page.slug === '' && slug === ''))
+  );
+}
+
+export function findPageTranslations({
+  tenantId,
+  translationKey
+}: {
+  tenantId: string;
+  translationKey: string;
+}) {
+  return pages.filter(
+    (page) => page.tenantId === tenantId && page.translationKey === translationKey
   );
 }

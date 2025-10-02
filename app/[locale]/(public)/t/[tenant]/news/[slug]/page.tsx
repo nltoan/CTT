@@ -3,6 +3,7 @@ import {notFound} from 'next/navigation';
 
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getPost} from '@lib/pages';
+import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 
 export async function generateMetadata({
@@ -20,10 +21,7 @@ export async function generateMetadata({
     return {};
   }
 
-  return {
-    title: post.title,
-    description: post.excerpt ?? tenant.description
-  };
+  return createPostMetadata({post, tenant, locale, tenantPath});
 }
 
 export default async function TenantNewsDetail({
@@ -46,6 +44,17 @@ export default async function TenantNewsDetail({
     getNavigation({tenantId: tenant.id, key: 'footer', locale})
   ]);
 
+  const articleJsonLd = buildArticleJsonLd({post, tenant, locale, tenantPath});
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd({
+    locale,
+    tenantPath,
+    items: [
+      {name: locale === 'vi' ? 'Trang chủ' : 'Home'},
+      {name: locale === 'vi' ? 'Tin tức' : 'News', slugSegments: ['news']},
+      {name: post.title, slugSegments: ['news', post.slug]}
+    ]
+  });
+
   return (
     <PageShell
       tenant={tenant}
@@ -55,6 +64,16 @@ export default async function TenantNewsDetail({
       tenantPath={tenantPath}
     >
       <article className="bg-white py-16">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(articleJsonLd)}}
+        />
+        {breadcrumbJsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbJsonLd)}}
+          />
+        )}
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6">
           <header className="space-y-3">
             <p className="text-sm uppercase tracking-wide text-primary">
