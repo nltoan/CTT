@@ -15,7 +15,13 @@ body {
 }
 
 a {
-  @apply text-primary underline-offset-4 transition-colors hover:opacity-80;
+  color: var(--color-primary);
+  text-underline-offset: 4px;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+a:hover {
+  opacity: 0.8;
 }
 
 main {
