@@ -4,6 +4,7 @@ import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor} from '@type
 import type {ResolvedSiteSettings} from '@lib/settings';
 import {findPageTranslations} from '@data/pages';
 import {findPostTranslations} from '@data/posts';
+import {findEventTranslations} from '@data/events';
 
 const DEFAULT_OG_IMAGE = 'https://images.unsplash.com/photo-1485579149621-3123dd979885';
 const LOCALE_TO_BCP47: Record<'vi' | 'en', string> = {
@@ -252,6 +253,68 @@ export function createPostMetadata({
     twitter: {
       card: 'summary_large_image',
       title: post.title,
+      description,
+      images: [image]
+    }
+  } satisfies Metadata;
+}
+
+export function createEventMetadata({
+  event,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  event: Event;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}): Metadata {
+  const slugSegments = ['events', event.slug];
+  const canonicalPath = buildPath({locale, tenantPath, slugSegments});
+  const canonicalUrl = buildAbsoluteUrl(canonicalPath);
+  const defaults = settings?.seo ?? {};
+  const description =
+    event.summary ?? event.description ?? defaults.description ?? tenant.description ?? '';
+  const image = resolveImage(event.coverImage, tenant, defaults.image);
+  const translations = findEventTranslations({
+    translationKey: event.translationKey,
+    eventId: event.id
+  });
+  const alternateLanguages = Object.fromEntries(
+    translations.map((translation) => {
+      const path = buildPath({
+        locale: translation.locale,
+        tenantPath,
+        slugSegments: ['events', translation.slug]
+      });
+      return [translation.locale, buildAbsoluteUrl(path)];
+    })
+  );
+
+  return {
+    title: event.title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: alternateLanguages
+    },
+    openGraph: {
+      type: 'event',
+      url: canonicalUrl,
+      title: event.title,
+      description,
+      siteName: defaults.siteName ?? tenant.name,
+      locale: mapLocaleToBcp47(locale),
+      images: [{url: image}],
+      startTime: event.startsAt,
+      endTime: event.endsAt
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.title,
       description,
       images: [image]
     }
@@ -521,6 +584,48 @@ export function buildNewsListJsonLd({
   };
 }
 
+export function buildEventJsonLd({
+  event,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  event: Event;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  const organizerInfo = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const path = buildPath({locale, tenantPath, slugSegments: ['events', event.slug]});
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    startDate: event.startsAt,
+    endDate: event.endsAt ?? event.startsAt,
+    description: event.description ?? event.summary ?? tenant.description ?? '',
+    eventAttendanceMode: 'https://schema.org/MixedEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    inLanguage: mapLocaleToBcp47(locale),
+    organizer: {
+      '@type': 'Organization',
+      name: organizerInfo.name,
+      url: organizerInfo.url,
+      sameAs: organizerInfo.sameAs
+    },
+    location: event.location
+      ? {
+          '@type': 'Place',
+          name: event.location
+        }
+      : undefined,
+    image: event.coverImage ? [event.coverImage] : undefined,
+    url: buildAbsoluteUrl(path)
+  };
+}
+
 export function buildEventsGraphJsonLd({
   events,
   tenant,
@@ -538,10 +643,10 @@ export function buildEventsGraphJsonLd({
     return null;
   }
 
-  const organizer = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const organizerInfo = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
   const defaults = settings?.seo ?? {};
   const graph = events.map((event) => {
-    const path = buildPath({locale, tenantPath, slugSegments: ['events']});
+    const path = buildPath({locale, tenantPath, slugSegments: ['events', event.slug]});
     return {
       '@type': 'Event',
       name: event.title,
@@ -559,10 +664,12 @@ export function buildEventsGraphJsonLd({
       inLanguage: mapLocaleToBcp47(locale),
       organizer: {
         '@type': 'Organization',
-        name: organizer.name,
-        url: organizer.url
+        name: organizerInfo.name,
+        url: organizerInfo.url,
+        sameAs: organizerInfo.sameAs
       },
-      url: buildAbsoluteUrl(`${path}#event-${event.id}`)
+      image: event.coverImage ? [event.coverImage] : undefined,
+      url: buildAbsoluteUrl(path)
     };
   });
 

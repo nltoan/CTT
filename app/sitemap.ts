@@ -50,6 +50,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
 
       const events = listEventsByTenant({tenantId: tenant.id, locale});
+      events.forEach((event) => {
+        const eventPath = buildPath({locale, tenantPath, slugSegments: ['events', event.slug]});
+        entries.push({
+          url: buildAbsoluteUrl(eventPath),
+          lastModified: toDate(event.updatedAt ?? event.startsAt),
+          changeFrequency: 'weekly',
+          priority: 0.7
+        });
+      });
       const eventsPath = buildPath({locale, tenantPath, slugSegments: ['events']});
       entries.push({
         url: buildAbsoluteUrl(eventsPath),

@@ -177,6 +177,14 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - Component `components/layout/Pagination.tsx` render prev/next + số trang, hỗ trợ locale để đổi label.
 - Trang chi tiết `/news/[slug]` hiển thị danh sách tag của bài viết và module “Bài viết liên quan” dựa trên category/tag chung (`getRelatedPosts`).
 
+### Trang Sự kiện & chi tiết
+
+- Route `/[locale]/events` (và `/[locale]/t/[tenant]/events`) hỗ trợ lọc theo `status` (`upcoming`, `past`, `all`), `category`, từ khóa `q` và phân trang `page`.
+- API `getEventListing` gom meta `{items, totalPages, page}` để hiển thị grid sự kiện, trong khi block `event-list` tái sử dụng cho cả page builder lẫn trang danh sách.
+- Trang chi tiết `/events/[slug]` render metadata chuẩn (`createEventMetadata`), JSON-LD `Event`, breadcrumbs, cùng thông tin ngày giờ, địa điểm, tag và nội dung rich-text/block.
+- Khối nội dung bổ sung (`event.blocks`) dùng lại `PageRenderer` nên có thể cấy timeline, CTA, gallery… trực tiếp từ CMS.
+- Mục “More events” lấy dữ liệu từ helper `getEvents` (lọc sự kiện sắp diễn ra, fallback danh sách toàn bộ) để tăng tỷ lệ chuyển đổi.
+
 Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
 
 ## API Public Layer
@@ -185,7 +193,8 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /tenants/:slug`
 - `GET /pages?tenant=&slug=`
 - `GET /posts` (hỗ trợ `page`, `limit`, `category`, `tag`, `q`, trả kèm `meta` tổng số bài viết và số trang), `GET /posts/:slug` (bao gồm mảng `related`)
-- `GET /events`
+- `GET /events` (hỗ trợ `page`, `limit`, `status`, `category`, `q`, trả kèm `meta`)
+- `GET /events/:slug`
 - `GET /people`, `GET /sponsors`
 - `GET /settings`
 - `GET /navigations`

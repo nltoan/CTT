@@ -2,12 +2,8 @@ import {notFound} from 'next/navigation';
 
 import {PageRenderer} from '@components/PageRenderer';
 import {PageShell} from '@components/layout/PageShell';
-import {
-  getPageForTenant,
-  getNavigation,
-  getRecentPosts,
-  getEvents as getEventsForTenant
-} from '@lib/pages';
+import {getPageForTenant, getNavigation, getRecentPosts} from '@lib/pages';
+import {getEvents as getEventsForTenant} from '@lib/events';
 import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant} from '@lib/settings';
@@ -82,7 +78,10 @@ export default async function Page({
             locale,
             from: options?.from,
             to: options?.to,
-            limit: options?.limit
+            limit: options?.limit,
+            status: options?.status,
+            category: options?.category,
+            q: options?.q
           })
         }
         tenantPath={tenantPath}

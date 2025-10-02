@@ -25,7 +25,14 @@ type PostLookup = (query?: {
   tag?: string;
   q?: string;
 }) => Promise<Post[]>;
-type EventLookup = (options?: {from?: Date; to?: Date; limit?: number}) => Promise<Event[]>;
+type EventLookup = (options?: {
+  from?: Date;
+  to?: Date;
+  limit?: number;
+  status?: 'upcoming' | 'past' | 'all';
+  category?: string;
+  q?: string;
+}) => Promise<Event[]>;
 
 function isHiddenEverywhere(block: Block) {
   const visibility = block.style?.visibility;
@@ -63,7 +70,10 @@ export async function PageRenderer({
         const events = await getEvents({
           from: block.query?.from ? new Date(block.query.from) : undefined,
           to: block.query?.to ? new Date(block.query.to) : undefined,
-          limit: block.query?.limit
+          limit: block.query?.limit,
+          status: block.query?.status,
+          category: block.query?.category,
+          q: block.query?.q
         });
         return {block, events};
       }

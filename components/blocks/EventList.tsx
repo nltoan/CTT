@@ -58,11 +58,14 @@ export function EventList({
     (locale === 'vi'
       ? 'Theo dõi các mốc audition, workshop và concert dành cho thí sinh.'
       : 'Keep track of auditions, workshops, and concerts for contestants.');
+  const detailLabel = block.detailLabel ?? (locale === 'vi' ? 'Xem chi tiết' : 'View details');
   const emptyMessage =
     block.emptyStateMessage ??
     (locale === 'vi'
       ? 'Chưa có sự kiện nào trong giai đoạn này. Hãy quay lại sau!'
       : 'No events are scheduled for this period. Please check back soon!');
+  const showDetailLinks = block.showDetailLinks ?? true;
+  const viewAllLabel = block.ctaLabel ?? (locale === 'vi' ? 'Xem toàn bộ lịch' : 'View full schedule');
 
   const headingAlign =
     block.style?.align === 'center'
@@ -83,46 +86,72 @@ export function EventList({
         </p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {events.map((event) => (
-            <article
-              key={event.id}
-              className="flex h-full flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="space-y-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-                  {locale === 'vi' ? 'Sự kiện' : 'Event'}
-                </span>
-                <h3 className="text-xl font-semibold text-secondary">{event.title}</h3>
-                <dl className="space-y-1 text-sm text-gray-600">
-                  <div className="flex items-start gap-2">
-                    <dt className="font-medium text-secondary">
-                      {locale === 'vi' ? 'Thời gian:' : 'When:'}
-                    </dt>
-                    <dd>{formatDateRange({startsAt: event.startsAt, endsAt: event.endsAt, locale})}</dd>
+          {events.map((event) => {
+            const detailHref = `/${locale}${tenantPath}/events/${event.slug}`;
+            return (
+              <article
+                key={event.id}
+                className="flex h-full flex-col justify-between rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-primary bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                      {event.category ?? (locale === 'vi' ? 'Sự kiện' : 'Event')}
+                    </span>
+                    <time className="text-xs font-medium uppercase tracking-wide text-secondary">
+                      {formatDateRange({startsAt: event.startsAt, endsAt: event.endsAt, locale})}
+                    </time>
                   </div>
+                  <h3 className="text-xl font-semibold text-secondary">
+                    {showDetailLinks ? (
+                      <Link href={detailHref} className="hover:opacity-80">
+                        {event.title}
+                      </Link>
+                    ) : (
+                      event.title
+                    )}
+                  </h3>
+                  {event.summary && <p className="text-sm text-gray-600">{event.summary}</p>}
                   {event.location && (
-                    <div className="flex items-start gap-2">
-                      <dt className="font-medium text-secondary">
-                        {locale === 'vi' ? 'Địa điểm:' : 'Where:'}
-                      </dt>
-                      <dd>{event.location}</dd>
-                    </div>
+                    <p className="text-sm font-medium text-secondary">
+                      {locale === 'vi' ? 'Địa điểm: ' : 'Venue: '}
+                      <span className="font-normal text-gray-600">{event.location}</span>
+                    </p>
                   )}
-                </dl>
-                {event.description && <p className="text-sm text-gray-600">{event.description}</p>}
-              </div>
-              {block.ctaLabel && (
-                <div className="pt-4">
-                  <Link
-                    href={`/${locale}${tenantPath}/events`}
-                    className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80"
-                  >
-                    {block.ctaLabel} →
-                  </Link>
+                  {event.tags?.length ? (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {event.tags.map((tag) => (
+                        <span key={tag} className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              )}
-            </article>
-          ))}
+                {showDetailLinks && (
+                  <div className="pt-4">
+                    <Link
+                      href={detailHref}
+                      className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80"
+                    >
+                      {detailLabel} →
+                    </Link>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+      {block.ctaLabel && (
+        <div className="flex justify-center pt-2">
+          <Link
+            href={`/${locale}${tenantPath}/events`}
+            className="inline-flex items-center gap-2 rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary transition hover:-translate-y-0.5 hover:bg-primary/5"
+          >
+            {viewAllLabel}
+            <span aria-hidden>→</span>
+          </Link>
         </div>
       )}
     </BlockSection>

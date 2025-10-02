@@ -139,11 +139,16 @@ export type EventListBlock = BlockBase & {
   title?: string;
   description?: string;
   ctaLabel?: string;
+  detailLabel?: string;
+  showDetailLinks?: boolean;
   emptyStateMessage?: string;
   query?: {
     from?: string;
     to?: string;
     limit?: number;
+    status?: 'upcoming' | 'past' | 'all';
+    category?: string;
+    q?: string;
   };
 };
 

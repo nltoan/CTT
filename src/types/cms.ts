@@ -74,13 +74,22 @@ export type Post = {
 
 export type Event = {
   id: string;
+  slug: string;
+  translationKey: string;
   tenantId: string;
   locale: 'vi' | 'en';
   title: string;
+  summary?: string;
   startsAt: string;
   endsAt?: string;
   location?: string;
   description?: string;
+  category?: string;
+  tags?: string[];
+  coverImage?: string;
+  content?: string;
+  blocks?: Block[];
+  updatedAt?: string;
 };
 
 export type PersonSocialProfile = {
