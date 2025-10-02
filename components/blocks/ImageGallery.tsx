@@ -14,7 +14,7 @@ export function ImageGallery({block}: {block: ImageGalleryBlock}) {
           <header className="max-w-2xl">
             {block.title ? <h2 className="text-3xl font-semibold text-secondary">{block.title}</h2> : null}
             {block.description ? (
-              <p className="mt-3 text-base text-secondary/80">{block.description}</p>
+              <p className="mt-3 text-base text-secondary text-opacity-80">{block.description}</p>
             ) : null}
           </header>
         )}
@@ -29,7 +29,7 @@ export function ImageGallery({block}: {block: ImageGalleryBlock}) {
                   loading="lazy"
                 />
                 {item.caption ? (
-                  <figcaption className="bg-secondary/80 px-4 py-3 text-sm text-white">
+                  <figcaption className="bg-secondary bg-opacity-80 px-4 py-3 text-sm text-white">
                     {item.caption}
                   </figcaption>
                 ) : null}
@@ -39,7 +39,10 @@ export function ImageGallery({block}: {block: ImageGalleryBlock}) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {block.items.map((item, index) => (
-              <figure key={index} className="flex flex-col overflow-hidden rounded-xl border border-secondary/10">
+              <figure
+                key={index}
+                className="flex flex-col overflow-hidden rounded-xl border border-secondary border-opacity-10"
+              >
                 <img
                   src={item.media.url}
                   alt={item.media.alt ?? ''}
@@ -47,7 +50,7 @@ export function ImageGallery({block}: {block: ImageGalleryBlock}) {
                   loading="lazy"
                 />
                 {item.caption ? (
-                  <figcaption className="px-4 py-3 text-sm text-secondary/80">{item.caption}</figcaption>
+                  <figcaption className="px-4 py-3 text-sm text-secondary text-opacity-80">{item.caption}</figcaption>
                 ) : null}
               </figure>
             ))}

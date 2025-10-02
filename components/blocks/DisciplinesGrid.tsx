@@ -27,7 +27,7 @@ export function DisciplinesGrid({block}: {block: DisciplinesGridBlock}) {
               {item.href && (
                 <a
                   href={item.href}
-                  className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
+                  className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80"
                 >
                   Tìm hiểu thêm →
                 </a>

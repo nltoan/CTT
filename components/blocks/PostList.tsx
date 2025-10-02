@@ -45,7 +45,7 @@ export function PostList({
                 {post.excerpt && <p className="text-sm text-gray-600">{post.excerpt}</p>}
                 <Link
                   href={`/${locale}${tenantPath}/news/${post.slug}`}
-                  className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80"
+                  className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80"
                 >
                   {block.ctaLabel ?? (locale === 'vi' ? 'Đọc thêm' : 'Read more')} →
                 </Link>

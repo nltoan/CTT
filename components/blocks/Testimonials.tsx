@@ -16,7 +16,7 @@ export function Testimonials({block}: {block: TestimonialsBlock}) {
               <h2 className="text-3xl font-semibold text-secondary">{block.title}</h2>
             ) : null}
             {block.description ? (
-              <p className="mt-3 text-base text-secondary/80">{block.description}</p>
+              <p className="mt-3 text-base text-secondary text-opacity-80">{block.description}</p>
             ) : null}
           </div>
         )}
@@ -25,12 +25,12 @@ export function Testimonials({block}: {block: TestimonialsBlock}) {
             <figure
               key={index}
               className={clsx(
-                'flex flex-col gap-4 rounded-2xl border border-secondary/10 bg-white/70 p-6 shadow-sm backdrop-blur',
+                'flex flex-col gap-4 rounded-2xl border border-secondary border-opacity-10 bg-white/70 p-6 shadow-sm backdrop-blur',
                 'transition hover:-translate-y-1 hover:shadow-lg'
               )}
             >
               <blockquote className="text-lg font-medium text-secondary">“{item.quote}”</blockquote>
-              <figcaption className="flex items-center gap-4 text-sm text-secondary/70">
+              <figcaption className="flex items-center gap-4 text-sm text-secondary text-opacity-70">
                 {item.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

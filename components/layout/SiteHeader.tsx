@@ -17,7 +17,7 @@ export function SiteHeader({
   tenantPath?: string;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-secondary/90 text-white backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-secondary bg-opacity-90 text-white backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-6 px-6 py-4">
         <Link href={`/${locale}${tenantPath}`} className="flex items-center gap-3">
           {tenant.logoUrl ? (

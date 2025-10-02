@@ -105,7 +105,7 @@ export function Slideshow({
             {block.description ? <p className="mt-3 text-base text-white/80">{block.description}</p> : null}
           </header>
         )}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-secondary/60 shadow-xl">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-secondary bg-opacity-60 shadow-xl">
           {(() => {
             const resolved = resolveSlideHref({
               href: currentSlide.href,

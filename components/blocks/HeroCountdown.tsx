@@ -81,7 +81,7 @@ export function HeroCountdown({
           {block.primaryCta && (
             <a
               href={block.primaryCta.href}
-              className="rounded-full bg-primary px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-primary/90"
+              className="rounded-full bg-primary px-6 py-3 text-base font-semibold text-white shadow-lg transition hover:opacity-90"
               target={block.primaryCta.external ? '_blank' : undefined}
               rel={block.primaryCta.external ? 'noopener noreferrer' : undefined}
             >
