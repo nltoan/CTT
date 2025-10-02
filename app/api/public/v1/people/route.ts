@@ -1,7 +1,7 @@
-import {NextResponse} from 'next/server';
-
 import {getPeople} from '@lib/people';
 import {resolveTenantFromParams} from '@lib/tenant';
+import {jsonResponseWithCache} from '@lib/http';
+import {getApiCacheTtl} from '@lib/settings';
 
 export async function GET(request: Request) {
   const {searchParams} = new URL(request.url);
@@ -16,5 +16,12 @@ export async function GET(request: Request) {
     limit: limitParam ? Number.parseInt(limitParam, 10) : undefined
   });
 
-  return NextResponse.json({data: people});
+  const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
+
+  return jsonResponseWithCache({
+    request,
+    body: {data: people},
+    ttl,
+    cacheTags: [`tenant:${tenant.id}`, 'collection:people']
+  });
 }

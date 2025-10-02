@@ -1,7 +1,6 @@
-import {getSponsors} from '@lib/people';
-import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
-import {getApiCacheTtl} from '@lib/settings';
+import {getSettingsForTenant} from '@lib/settings';
+import {resolveTenantFromParams} from '@lib/tenant';
 
 export async function GET(request: Request) {
   const {searchParams} = new URL(request.url);
@@ -9,14 +8,12 @@ export async function GET(request: Request) {
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
 
   const tenant = resolveTenantFromParams({tenantParam: tenantSlug});
-  const sponsors = await getSponsors({tenantId: tenant.id, locale});
-
-  const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
   return jsonResponseWithCache({
     request,
-    body: {data: sponsors},
-    ttl,
-    cacheTags: [`tenant:${tenant.id}`, 'collection:sponsors']
+    body: {data: settings},
+    ttl: settings.revalidateSeconds,
+    cacheTags: [`tenant:${tenant.id}`, 'collection:settings']
   });
 }

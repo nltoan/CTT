@@ -1,7 +1,7 @@
-import {NextResponse} from 'next/server';
-
 import {getNavigation} from '@lib/pages';
 import {resolveTenantFromParams} from '@lib/tenant';
+import {jsonResponseWithCache} from '@lib/http';
+import {getApiCacheTtl} from '@lib/settings';
 
 export async function GET(request: Request) {
   const {searchParams} = new URL(request.url);
@@ -13,8 +13,20 @@ export async function GET(request: Request) {
   const navigation = await getNavigation({tenantId: tenant.id, key, locale});
 
   if (!navigation) {
-    return NextResponse.json({error: 'Navigation not found'}, {status: 404});
+    return jsonResponseWithCache({
+      request,
+      body: {error: 'Navigation not found'},
+      status: 404,
+      ttl: 0
+    });
   }
 
-  return NextResponse.json({data: navigation});
+  const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
+
+  return jsonResponseWithCache({
+    request,
+    body: {data: navigation},
+    ttl,
+    cacheTags: [`tenant:${tenant.id}`, `navigation:${navigation.key}`]
+  });
 }

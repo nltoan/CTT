@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 
 import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor} from '@types/cms';
+import type {ResolvedSiteSettings} from '@lib/settings';
 import {findPageTranslations} from '@data/pages';
 import {findPostTranslations} from '@data/posts';
 
@@ -62,25 +63,29 @@ export function buildPath({
   return `/${segments.join('/')}`.replace(/\/$/, '');
 }
 
-function resolveImage(image?: string, tenant?: Tenant) {
-  return image ?? tenant?.logoUrl ?? DEFAULT_OG_IMAGE;
+function resolveImage(image?: string, tenant?: Tenant, fallback?: string) {
+  return image ?? fallback ?? tenant?.logoUrl ?? DEFAULT_OG_IMAGE;
 }
 
 export function createPageMetadata({
   page,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   page: Page;
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }): Metadata {
   const slugSegments = toSlugSegments(page.slug);
   const canonicalPath = buildPath({locale, tenantPath, slugSegments});
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
-  const description = page.seo?.description ?? tenant.description ?? '';
+  const defaults = settings?.seo ?? {};
+  const title = page.seo?.title ?? defaults.defaultTitle ?? page.title;
+  const description = page.seo?.description ?? defaults.description ?? tenant.description ?? '';
   const translations = findPageTranslations({
     tenantId: page.tenantId,
     translationKey: page.translationKey
@@ -96,10 +101,11 @@ export function createPageMetadata({
     })
   );
 
-  const image = resolveImage(page.seo?.image, tenant);
+  const image = resolveImage(page.seo?.image, tenant, defaults.image);
+  const siteName = defaults.siteName ?? tenant.name;
 
   return {
-    title: page.seo?.title ?? page.title,
+    title,
     description,
     alternates: {
       canonical: canonicalPath,
@@ -108,15 +114,15 @@ export function createPageMetadata({
     openGraph: {
       type: 'website',
       url: canonicalUrl,
-      title: page.seo?.title ?? page.title,
+      title,
       description,
-      siteName: tenant.name,
+      siteName,
       locale: mapLocaleToBcp47(locale),
       images: [{url: image}]
     },
     twitter: {
       card: 'summary_large_image',
-      title: page.seo?.title ?? page.title,
+      title,
       description,
       images: [image]
     }
@@ -129,7 +135,8 @@ export function createCollectionMetadata({
   tenantPath,
   slugSegments,
   title,
-  description
+  description,
+  settings
 }: {
   tenant: Tenant;
   locale: 'vi' | 'en';
@@ -137,10 +144,13 @@ export function createCollectionMetadata({
   slugSegments: string[];
   title: string;
   description: string;
+  settings?: ResolvedSiteSettings;
 }): Metadata {
   const canonicalPath = buildPath({locale, tenantPath, slugSegments});
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
-  const image = resolveImage(undefined, tenant);
+  const defaults = settings?.seo ?? {};
+  const image = resolveImage(undefined, tenant, defaults.image);
+  const siteName = defaults.siteName ?? tenant.name;
   const alternateLanguages = Object.fromEntries(
     tenant.locales.map((availableLocale) => {
       const path = buildPath({
@@ -164,7 +174,7 @@ export function createCollectionMetadata({
       url: canonicalUrl,
       title,
       description,
-      siteName: tenant.name,
+      siteName,
       locale: mapLocaleToBcp47(locale),
       images: [{url: image}]
     },
@@ -181,18 +191,21 @@ export function createPostMetadata({
   post,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   post: Post;
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }): Metadata {
   const slugSegments = ['news', post.slug];
   const canonicalPath = buildPath({locale, tenantPath, slugSegments});
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
-  const description = post.excerpt ?? tenant.description ?? '';
-  const image = resolveImage(post.coverImage, tenant);
+  const defaults = settings?.seo ?? {};
+  const description = post.excerpt ?? defaults.description ?? tenant.description ?? '';
+  const image = resolveImage(post.coverImage, tenant, defaults.image);
   const translations = findPostTranslations({
     tenantId: post.tenantId,
     translationKey: post.translationKey
@@ -220,7 +233,7 @@ export function createPostMetadata({
       url: canonicalUrl,
       title: post.title,
       description,
-      siteName: tenant.name,
+      siteName: defaults.siteName ?? tenant.name,
       locale: mapLocaleToBcp47(locale),
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt ?? post.publishedAt,
@@ -240,18 +253,22 @@ export function createPostMetadata({
 export function buildOrganizationJsonLd({
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   const url = buildAbsoluteUrl(buildPath({locale, tenantPath}));
-  const logo = resolveImage(undefined, tenant);
+  const defaults = settings?.seo ?? {};
+  const logo = resolveImage(undefined, tenant, defaults.image);
+  const name = defaults.organizationName ?? defaults.siteName ?? tenant.name;
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: tenant.name,
+    name,
     url,
     logo,
     sameAs: tenant.socialLinks?.map((link) => link.url) ?? []
@@ -337,23 +354,28 @@ export function buildArticleJsonLd({
   post,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   post: Post;
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   const canonicalPath = buildPath({locale, tenantPath, slugSegments: ['news', post.slug]});
   const url = buildAbsoluteUrl(canonicalPath);
-  const image = resolveImage(post.coverImage, tenant);
-  const organization = buildOrganizationJsonLd({tenant, locale, tenantPath});
+  const defaults = settings?.seo ?? {};
+  const image = resolveImage(post.coverImage, tenant, defaults.image);
+  const organization = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const description = post.excerpt ?? defaults.description ?? tenant.description ?? '';
+  const authorName = post.author ?? defaults.organizationName ?? defaults.siteName ?? tenant.name;
 
   return {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: post.title,
-    description: post.excerpt ?? tenant.description ?? '',
+    description,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
     inLanguage: mapLocaleToBcp47(locale),
@@ -361,7 +383,7 @@ export function buildArticleJsonLd({
     image: [image],
     author: {
       '@type': 'Organization',
-      name: post.author ?? tenant.name
+      name: authorName
     },
     publisher: {
       '@type': 'Organization',
@@ -379,12 +401,14 @@ export function buildPeopleJsonLd({
   people,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   people: Person[];
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   if (!people.length) {
     return null;
@@ -392,11 +416,13 @@ export function buildPeopleJsonLd({
 
   const basePath = buildPath({locale, tenantPath, slugSegments: ['people']});
   const baseUrl = buildAbsoluteUrl(basePath);
+  const defaults = settings?.seo ?? {};
+  const listName = defaults.siteName ?? tenant.name;
 
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: tenant.name,
+    name: listName,
     numberOfItems: people.length,
     itemListElement: people.map((person, index) => ({
       '@type': 'Person',
@@ -414,12 +440,14 @@ export function buildSponsorsJsonLd({
   sponsors,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   sponsors: Sponsor[];
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   if (!sponsors.length) {
     return null;
@@ -427,11 +455,13 @@ export function buildSponsorsJsonLd({
 
   const basePath = buildPath({locale, tenantPath, slugSegments: ['partners']});
   const baseUrl = buildAbsoluteUrl(basePath);
+  const defaults = settings?.seo ?? {};
+  const listName = `${defaults.siteName ?? tenant.name} sponsors`;
 
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: `${tenant.name} sponsors`,
+    name: listName,
     numberOfItems: sponsors.length,
     itemListElement: sponsors.map((sponsor, index) => ({
       '@type': 'Organization',
@@ -449,21 +479,26 @@ export function buildNewsListJsonLd({
   posts,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   posts: Post[];
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   if (!posts.length) {
     return null;
   }
 
+  const defaults = settings?.seo ?? {};
+  const listName = `${defaults.siteName ?? tenant.name} news`;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: `${tenant.name} news`,
+    name: listName,
     numberOfItems: posts.length,
     itemListElement: posts.map((post, index) => ({
       '@type': 'Article',
@@ -482,18 +517,21 @@ export function buildEventsGraphJsonLd({
   events,
   tenant,
   locale,
-  tenantPath
+  tenantPath,
+  settings
 }: {
   events: Event[];
   tenant: Tenant;
   locale: 'vi' | 'en';
   tenantPath: string;
+  settings?: ResolvedSiteSettings;
 }) {
   if (!events.length) {
     return null;
   }
 
-  const organizer = buildOrganizationJsonLd({tenant, locale, tenantPath});
+  const organizer = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const defaults = settings?.seo ?? {};
   const graph = events.map((event) => {
     const path = buildPath({locale, tenantPath, slugSegments: ['events']});
     return {
@@ -509,7 +547,7 @@ export function buildEventsGraphJsonLd({
             name: event.location
           }
         : undefined,
-      description: event.description ?? tenant.description ?? '',
+      description: event.description ?? defaults.description ?? tenant.description ?? '',
       inLanguage: mapLocaleToBcp47(locale),
       organizer: {
         '@type': 'Organization',

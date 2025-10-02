@@ -112,3 +112,37 @@ export type Sponsor = {
   logo: MediaRef;
   description?: string;
 };
+
+export type AnalyticsSettings = {
+  gaId?: string;
+  gtmId?: string;
+  metaPixelId?: string;
+  requiresConsent?: boolean;
+};
+
+export type CookieBannerSettings = {
+  enabled?: boolean;
+  message: string;
+  acceptLabel?: string;
+  rejectLabel?: string;
+  moreInfoLabel?: string;
+  moreInfoUrl?: string;
+};
+
+export type SeoDefaults = {
+  defaultTitle?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  organizationName?: string;
+};
+
+export type SiteSettings = {
+  id: string;
+  tenantId?: string;
+  locale: 'vi' | 'en';
+  seo?: SeoDefaults;
+  revalidateSeconds?: number;
+  analytics?: AnalyticsSettings;
+  cookieBanner?: CookieBannerSettings;
+};

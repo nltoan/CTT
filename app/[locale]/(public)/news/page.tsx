@@ -5,6 +5,7 @@ import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getRecentPosts} from '@lib/pages';
 import {createCollectionMetadata, buildNewsListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {getSettingsForTenant} from '@lib/settings';
 
 export const dynamic = 'force-static';
 
@@ -24,13 +25,16 @@ export async function generateMetadata({
       ? 'Cập nhật thông tin mới nhất về cuộc thi và các hoạt động âm nhạc.'
       : 'Stay updated with the latest announcements and stories.';
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   return createCollectionMetadata({
     tenant,
     locale,
     tenantPath,
     slugSegments: ['news'],
     title,
-    description
+    description,
+    settings
   });
 }
 
@@ -43,13 +47,21 @@ export default async function NewsIndex({
     params,
     locale: params.locale
   });
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   const [headerNavigation, footerNavigation, posts] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
     getNavigation({tenantId: tenant.id, key: 'footer', locale}),
     getRecentPosts({tenantId: tenant.id, locale})
   ]);
 
-  const newsListJsonLd = buildNewsListJsonLd({posts, tenant, locale, tenantPath});
+  const newsListJsonLd = buildNewsListJsonLd({
+    posts,
+    tenant,
+    locale,
+    tenantPath,
+    settings
+  });
 
   return (
     <PageShell
@@ -58,6 +70,7 @@ export default async function NewsIndex({
       headerNavigation={headerNavigation}
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
+      settings={settings}
     >
       {newsListJsonLd && (
         <script

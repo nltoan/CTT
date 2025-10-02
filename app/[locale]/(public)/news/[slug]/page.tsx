@@ -5,13 +5,14 @@ import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getPost} from '@lib/pages';
 import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {getSettingsForTenant} from '@lib/settings';
 
 export async function generateMetadata({
   params
 }: {
   params: {locale: 'vi' | 'en'; slug: string; tenant?: string};
 }): Promise<Metadata> {
-  const {tenant, locale} = readTenantResolutionFromRequest({
+  const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
     params: {tenant: params.tenant, slug: [params.slug]},
     locale: params.locale
   });
@@ -21,7 +22,9 @@ export async function generateMetadata({
     return {};
   }
 
-  return createPostMetadata({post, tenant, locale, tenantPath});
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
+  return createPostMetadata({post, tenant, locale, tenantPath, settings});
 }
 
 export default async function NewsDetail({
@@ -39,12 +42,14 @@ export default async function NewsDetail({
     notFound();
   }
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   const [headerNavigation, footerNavigation] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
     getNavigation({tenantId: tenant.id, key: 'footer', locale})
   ]);
 
-  const articleJsonLd = buildArticleJsonLd({post, tenant, locale, tenantPath});
+  const articleJsonLd = buildArticleJsonLd({post, tenant, locale, tenantPath, settings});
   const breadcrumbJsonLd = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
@@ -62,6 +67,7 @@ export default async function NewsDetail({
       headerNavigation={headerNavigation}
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
+      settings={settings}
     >
       <article className="bg-white py-16">
         <script

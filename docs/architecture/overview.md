@@ -115,6 +115,8 @@ frontend/
    - `name`, `logo`, `tier`, `url`, `tenant`, `order`.
 9. **slideshows**, **galleries**, **forms**, **form_submissions**.
 10. **settings** (Global + per tenant override).
+    - Fields: `seo` (title/description/image/siteName/organizationName), `revalidateSeconds`, `analytics` (gaId, gtmId, metaPixelId, requiresConsent), `cookieBanner` (message, labels, moreInfoUrl, enabled).
+    - Frontend merge global + tenant settings trong `src/lib/settings.ts` rồi inject vào layout, metadata và API cache TTL.
 
 ### Quan hệ & RBAC
 - Bảng trung gian `tenantUsers` (Payload `relation` field) ánh xạ `user` ↔ `tenant` với vai trò.
@@ -167,7 +169,7 @@ Các block UI đã được scaffold trong frontend gồm: `hero-countdown`, `ct
 
 Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) để điều chỉnh container, khoảng cách, màu nền/overlay, override CSS variables và giới hạn hiển thị theo breakpoint. Wrapper `components/blocks/BlockSection.tsx` đọc `style` và áp dụng class/inline-style tương ứng; `PageRenderer` bỏ qua block nếu `style.visibility` tắt cả `mobile`/`tablet`/`desktop`.
 
-Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild.
+Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
 
 ## API Public Layer
 
@@ -177,10 +179,11 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /posts`, `GET /posts/:slug`
 - `GET /events`
 - `GET /people`, `GET /sponsors`
+- `GET /settings`
 - `GET /navigations`
 - `GET /galleries/:id`, `GET /slideshows/:id`
 
-Áp dụng `Cache-Control: s-maxage=300, stale-while-revalidate=86400` và ETag. Bảo đảm filter theo `tenant`.
+Áp dụng `jsonResponseWithCache` (helper `src/lib/http.ts`) để tự động sinh ETag + header `Cache-Control` cho mọi phản hồi 200. TTL đọc từ `settings.revalidateSeconds` (global → override per tenant) giúp đồng bộ chiến lược cache giữa CDN/API.
 
 ## ISR & Webhook
 

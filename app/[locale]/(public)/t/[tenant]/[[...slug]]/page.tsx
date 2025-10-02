@@ -10,6 +10,7 @@ import {
 } from '@lib/pages';
 import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {getSettingsForTenant} from '@lib/settings';
 
 export async function generateMetadata({
   params
@@ -26,7 +27,9 @@ export async function generateMetadata({
     return {};
   }
 
-  return createPageMetadata({page, tenant, locale, tenantPath});
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
+  return createPageMetadata({page, tenant, locale, tenantPath, settings});
 }
 
 export default async function TenantPage({
@@ -44,6 +47,8 @@ export default async function TenantPage({
     notFound();
   }
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   const [headerNavigation, footerNavigation] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
     getNavigation({tenantId: tenant.id, key: 'footer', locale})
@@ -56,6 +61,7 @@ export default async function TenantPage({
       headerNavigation={headerNavigation}
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
+      settings={settings}
     >
       <PageRenderer
         blocks={page.blocks}

@@ -5,6 +5,7 @@ import {PageShell} from '@components/layout/PageShell';
 import {getEvents, getNavigation} from '@lib/pages';
 import {createCollectionMetadata, buildEventsGraphJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {getSettingsForTenant} from '@lib/settings';
 
 export const dynamic = 'force-static';
 
@@ -24,13 +25,16 @@ export async function generateMetadata({
       ? 'Theo dõi đầy đủ các mốc audition, workshop và concert quan trọng của cuộc thi.'
       : 'Explore every upcoming audition, workshop, and concert for the competition.';
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   return createCollectionMetadata({
     tenant,
     locale,
     tenantPath,
     slugSegments: ['events'],
     title,
-    description
+    description,
+    settings
   });
 }
 
@@ -57,6 +61,8 @@ export default async function TenantEventsIndex({
     locale: params.locale
   });
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   const [headerNavigation, footerNavigation, events] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
     getNavigation({tenantId: tenant.id, key: 'footer', locale}),
@@ -67,7 +73,8 @@ export default async function TenantEventsIndex({
     events,
     tenant,
     locale,
-    tenantPath
+    tenantPath,
+    settings
   });
 
   return (
@@ -77,6 +84,7 @@ export default async function TenantEventsIndex({
       headerNavigation={headerNavigation}
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
+      settings={settings}
     >
       {eventsJsonLd && (
         <script

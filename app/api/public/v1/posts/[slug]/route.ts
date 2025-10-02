@@ -1,7 +1,7 @@
-import {NextResponse} from 'next/server';
-
 import {getPost} from '@lib/pages';
 import {resolveTenantFromParams} from '@lib/tenant';
+import {jsonResponseWithCache} from '@lib/http';
+import {getApiCacheTtl} from '@lib/settings';
 
 export async function GET(request: Request, context: {params: {slug: string}}) {
   const {searchParams} = new URL(request.url);
@@ -12,8 +12,20 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
   const post = await getPost({tenantId: tenant.id, locale, slug: context.params.slug});
 
   if (!post) {
-    return NextResponse.json({error: 'Post not found'}, {status: 404});
+    return jsonResponseWithCache({
+      request,
+      body: {error: 'Post not found'},
+      status: 404,
+      ttl: 0
+    });
   }
 
-  return NextResponse.json({data: post});
+  const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
+
+  return jsonResponseWithCache({
+    request,
+    body: {data: post},
+    ttl,
+    cacheTags: [`tenant:${tenant.id}`, `post:${post.id}`]
+  });
 }

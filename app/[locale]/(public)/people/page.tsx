@@ -6,6 +6,7 @@ import {getNavigation} from '@lib/pages';
 import {getPeople} from '@lib/people';
 import {createCollectionMetadata, buildPeopleJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {getSettingsForTenant} from '@lib/settings';
 
 const buildBaseBlock = (locale: 'vi' | 'en') => ({
   type: 'people-grid' as const,
@@ -38,13 +39,16 @@ export async function generateMetadata({
       ? 'Những nghệ sĩ và nhà sư phạm đồng hành cùng thí sinh trong suốt hành trình.'
       : 'Artists and pedagogues mentoring contestants throughout their journey.';
 
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+
   return createCollectionMetadata({
     tenant,
     locale,
     tenantPath,
     slugSegments: ['people'],
     title,
-    description
+    description,
+    settings
   });
 }
 
@@ -57,6 +61,8 @@ export default async function PeopleIndex({
     params,
     locale: params.locale
   });
+
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
   const [headerNavigation, footerNavigation, people] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
@@ -74,7 +80,7 @@ export default async function PeopleIndex({
     }))
   };
 
-  const peopleJsonLd = buildPeopleJsonLd({people, tenant, locale, tenantPath});
+  const peopleJsonLd = buildPeopleJsonLd({people, tenant, locale, tenantPath, settings});
 
   return (
     <PageShell
@@ -83,6 +89,7 @@ export default async function PeopleIndex({
       headerNavigation={headerNavigation}
       footerNavigation={footerNavigation}
       tenantPath={tenantPath}
+      settings={settings}
     >
       {peopleJsonLd && (
         <script
