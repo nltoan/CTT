@@ -59,6 +59,7 @@ export default async function Page({
         locale={locale}
         getPosts={(limit) => getRecentPosts({tenantId: tenant.id, locale, limit})}
         tenantPath={tenantPath}
+        tenantId={tenant.id}
       />
     </PageShell>
   );

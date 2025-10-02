@@ -188,7 +188,8 @@ Payload webhook (mỗi collection) gọi `POST https://frontend.vercel.app/api/r
   "slug": "home"
 }
 ```
-`app/api/revalidate/route.ts` kiểm tra secret, gọi `revalidateTag(['tenant:cimfc', 'page:home'])`.
+Payload nên gửi kèm `secret` (khớp `REVALIDATE_SECRET`) và có thể mở rộng `paths` nếu muốn revalidate tùy chỉnh.
+`app/api/revalidate/route.ts` kiểm tra secret, chuẩn hóa `slug` theo từng tenant/locale, rồi gọi `revalidatePath` cho các đường dẫn liên quan (ví dụ `/vi`, `/en`, `/vi/news`, `/en/news/[slug]`, các trang cần re-render khi navigation/settings thay đổi).
 
 ## i18n & SEO
 
@@ -208,9 +209,11 @@ Payload webhook (mỗi collection) gọi `POST https://frontend.vercel.app/api/r
 
 ## Form & Chống spam
 
-- Endpoint `POST /api/forms/:key`.
-- Honeypot field `website` ẩn, reCAPTCHA optional.
-- Lưu submission vào Payload `form_submissions`, trigger email qua Resend/SMTP.
+- Endpoint `POST /api/forms/:key` xử lý bởi `app/api/forms/[key]/route.ts`.
+- Cấu hình form lưu tại `src/data/forms.ts` theo tenant/locale; helper `src/lib/forms.ts` lấy view, validate dữ liệu và lưu submission vào `src/data/form-submissions.ts` (mock) trước khi tích hợp Payload.
+- Honeypot field mặc định `website`, có thể đổi từng form. Server kiểm tra và trả lỗi nếu bot điền.
+- Rate limit in-memory: tối đa 5 submit/5 phút/IP/form. Header `Retry-After` được set khi bị giới hạn.
+- Khi kết nối Payload CMS, thay `addSubmission` bằng API ghi vào collection `form_submissions` + trigger email (Resend/SMTP) + automation Zapier nếu cần.
 
 ## Kiểm thử
 

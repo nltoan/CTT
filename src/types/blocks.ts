@@ -103,6 +103,7 @@ export type ContactBlock = {
   email?: string;
   emailLabel?: string;
   mapEmbed?: string;
+  formKey?: string;
 };
 
 export type TestimonialsBlock = {

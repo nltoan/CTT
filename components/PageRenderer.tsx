@@ -14,7 +14,9 @@ import {RichContent} from './blocks/RichContent';
 
 import type {Block} from '@types/blocks';
 import type {Post} from '@types/cms';
+import type {FormView} from '@types/forms';
 import type {Locale} from '@i18n/config';
+import {getFormView} from '@lib/forms';
 
 type PostLookup = (limit?: number) => Promise<Post[]>;
 
@@ -22,12 +24,14 @@ export async function PageRenderer({
   blocks,
   locale,
   getPosts,
-  tenantPath = ''
+  tenantPath = '',
+  tenantId
 }: {
   blocks: Block[];
   locale: Locale;
   getPosts: PostLookup;
   tenantPath?: string;
+  tenantId: string;
 }) {
   const resolvedBlocks = await Promise.all(
     blocks.map(async (block) => {
@@ -35,13 +39,21 @@ export async function PageRenderer({
         const posts = await getPosts(block.query?.limit);
         return {block, posts};
       }
+      if (block.type === 'contact' && block.formKey) {
+        const form = await getFormView({
+          tenantId,
+          key: block.formKey,
+          locale
+        });
+        return {block, form};
+      }
       return {block};
     })
   );
 
   return (
     <main>
-      {resolvedBlocks.map(({block, posts}, index) => {
+      {resolvedBlocks.map(({block, posts, form}: {block: Block; posts?: Post[]; form?: FormView | null}, index) => {
         switch (block.type) {
           case 'hero-countdown':
             return <HeroCountdown key={index} block={block} />;
@@ -66,7 +78,15 @@ export async function PageRenderer({
               />
             ) : null;
           case 'contact':
-            return <ContactBlock key={index} block={block} />;
+            return (
+              <ContactBlock
+                key={index}
+                block={block}
+                form={form ?? undefined}
+                tenantId={tenantId}
+                locale={locale}
+              />
+            );
           case 'testimonials':
             return <Testimonials key={index} block={block} />;
           case 'image-gallery':
