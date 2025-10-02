@@ -7,9 +7,13 @@ export function RichContent({block}: {block: RichContentBlock}) {
 
   return (
     <section className="bg-white py-16">
-      <div className="prose prose-lg mx-auto w-full max-w-3xl px-6 text-secondary prose-headings:font-semibold prose-a:text-primary prose-a:transition-opacity hover:prose-a:opacity-80">
-        {block.title ? <h2>{block.title}</h2> : null}
-        <div dangerouslySetInnerHTML={{__html: block.content}} />
+      <div className="rich-content mx-auto w-full max-w-3xl px-6 text-secondary">
+        {block.title ? (
+          <h2 className="mb-6 text-3xl font-semibold tracking-tight text-secondary sm:text-4xl">
+            {block.title}
+          </h2>
+        ) : null}
+        <div className="rich-content__body" dangerouslySetInnerHTML={{__html: block.content}} />
       </div>
     </section>
   );
