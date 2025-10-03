@@ -93,6 +93,18 @@ npm run dev
 
 Ứng dụng mặc định build statically, hỗ trợ ISR/on-demand revalidate thông qua route `app/api/revalidate/route.ts` (cần set biến môi trường `REVALIDATE_SECRET`, mặc định `dev-secret`).
 
+#### Kiểm thử đơn vị
+
+```bash
+npm test
+```
+
+Bộ test dùng [Vitest](https://vitest.dev/) + Testing Library để kiểm tra các hàm quan trọng:
+
+- `@lib/tenant` – xác thực locale, nhận diện tenant qua host/params và sinh biến CSS theo theme.
+- `components/PageRenderer` – đảm bảo loại bỏ block bị ẩn toàn bộ và render block tin tức đúng với dữ liệu trả về.
+- `components/layout/LanguageSwitcher` – tạo đường dẫn chuyển ngôn ngữ chính xác cho mọi tuyến.
+
 ### Biến môi trường quan trọng
 
 - `NEXT_PUBLIC_SITE_URL` (hoặc `SITE_URL`): URL gốc dùng để sinh canonical URL, sitemap, robots và metadata Open Graph. Nếu không đặt, giá trị mặc định là `https://ctt.example.com`.

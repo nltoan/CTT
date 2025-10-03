@@ -34,7 +34,7 @@ type EventLookup = (options?: {
   q?: string;
 }) => Promise<Event[]>;
 
-function isHiddenEverywhere(block: Block) {
+export function isBlockHiddenEverywhere(block: Block) {
   const visibility = block.style?.visibility;
   if (!visibility) {
     return false;
@@ -58,7 +58,7 @@ export async function PageRenderer({
   tenantPath?: string;
   tenantId: string;
 }) {
-  const visibleBlocks = blocks.filter((block) => !isHiddenEverywhere(block));
+  const visibleBlocks = blocks.filter((block) => !isBlockHiddenEverywhere(block));
 
   const resolvedBlocks = await Promise.all(
     visibleBlocks.map(async (block) => {
