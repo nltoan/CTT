@@ -6,7 +6,14 @@ import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getPost, getRelatedPosts} from '@lib/pages';
 import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getRootPostStaticParams} from '@lib/static-paths';
+
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getRootPostStaticParams();
+}
 
 export async function generateMetadata({
   params

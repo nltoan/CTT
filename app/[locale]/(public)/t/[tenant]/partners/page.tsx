@@ -6,7 +6,8 @@ import {getNavigation} from '@lib/pages';
 import {getSponsors} from '@lib/people';
 import {createCollectionMetadata, buildSponsorsJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getTenantPartnersStaticParams} from '@lib/static-paths';
 
 const buildBaseBlock = (locale: 'vi' | 'en') => ({
   type: 'sponsors-grid' as const,
@@ -22,6 +23,11 @@ const buildBaseBlock = (locale: 'vi' | 'en') => ({
 });
 
 export const dynamic = 'force-static';
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getTenantPartnersStaticParams();
+}
 
 export async function generateMetadata({
   params

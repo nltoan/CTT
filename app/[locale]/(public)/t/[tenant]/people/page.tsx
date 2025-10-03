@@ -6,7 +6,8 @@ import {getNavigation} from '@lib/pages';
 import {getPeople} from '@lib/people';
 import {createCollectionMetadata, buildPeopleJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getTenantPeopleStaticParams} from '@lib/static-paths';
 
 const buildBaseBlock = (locale: 'vi' | 'en') => ({
   type: 'people-grid' as const,
@@ -22,6 +23,11 @@ const buildBaseBlock = (locale: 'vi' | 'en') => ({
 });
 
 export const dynamic = 'force-static';
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getTenantPeopleStaticParams();
+}
 
 export async function generateMetadata({
   params

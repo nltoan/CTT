@@ -6,7 +6,14 @@ import {getPageForTenant, getNavigation, getRecentPosts} from '@lib/pages';
 import {getEvents as getEventsForTenant} from '@lib/events';
 import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getRootPageStaticParams} from '@lib/static-paths';
+
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getRootPageStaticParams();
+}
 
 export async function generateMetadata({
   params

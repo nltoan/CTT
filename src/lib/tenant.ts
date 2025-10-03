@@ -25,10 +25,10 @@ export function assertLocale(value: string | undefined): value is 'vi' | 'en' {
 
 export function resolveTenantByHost(host?: string | null) {
   if (!host) {
-    return tenants[0];
+    return getDefaultTenant();
   }
   const hostname = host.split(':')[0];
-  return findTenantByDomain(hostname) ?? tenants[0];
+  return findTenantByDomain(hostname) ?? getDefaultTenant();
 }
 
 export function resolveTenantFromParams({
@@ -45,6 +45,10 @@ export function resolveTenantFromParams({
     }
   }
   return resolveTenantByHost(host);
+}
+
+export function getDefaultTenant() {
+  return findTenantBySlug('main') ?? tenants[0];
 }
 
 export function getTenantThemeCssVariables(tenant: Tenant) {

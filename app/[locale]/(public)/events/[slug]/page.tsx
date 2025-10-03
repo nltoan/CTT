@@ -8,7 +8,14 @@ import {getNavigation, getRecentPosts} from '@lib/pages';
 import {getEvent, getEvents as fetchEventsForBlocks} from '@lib/events';
 import {createEventMetadata, buildEventJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getRootEventStaticParams} from '@lib/static-paths';
+
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getRootEventStaticParams();
+}
 
 function formatDateTime({
   startsAt,

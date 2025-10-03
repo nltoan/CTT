@@ -7,6 +7,8 @@ import type {
   SiteSettings
 } from '@types/cms';
 
+export const DEFAULT_REVALIDATE_SECONDS = 120;
+
 export type ResolvedSiteSettings = {
   id: string;
   tenantId?: string;
@@ -116,7 +118,9 @@ export function getSettingsForTenant({
     analytics,
     cookieBanner,
     revalidateSeconds:
-      tenantSpecific?.revalidateSeconds ?? global?.revalidateSeconds ?? 120
+      tenantSpecific?.revalidateSeconds
+        ?? global?.revalidateSeconds
+        ?? DEFAULT_REVALIDATE_SECONDS
   };
 }
 
