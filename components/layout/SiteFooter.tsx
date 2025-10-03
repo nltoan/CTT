@@ -12,6 +12,19 @@ export function SiteFooter({
   locale: string;
   tenantPath?: string;
 }) {
+  const resourceLinks = [
+    {
+      id: 'rss',
+      href: `/${locale}${tenantPath}/news/feed.xml`,
+      label: locale === 'vi' ? 'RSS Tin tức' : 'News RSS'
+    },
+    {
+      id: 'ics',
+      href: `/${locale}${tenantPath}/events/calendar.ics`,
+      label: locale === 'vi' ? 'Lịch sự kiện (.ics)' : 'Events calendar (.ics)'
+    }
+  ];
+
   return (
     <footer className="bg-secondary text-white">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 md:flex-row md:items-center md:justify-between">
@@ -49,6 +62,13 @@ export function SiteFooter({
               ))}
             </div>
           )}
+          <div className="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-white/60">
+            {resourceLinks.map((link) => (
+              <a key={link.id} href={link.href} className="transition hover:text-white">
+                {link.label}
+              </a>
+            ))}
+          </div>
           <p className="text-xs text-white/60">© {new Date().getFullYear()} {tenant.name}</p>
         </div>
       </div>

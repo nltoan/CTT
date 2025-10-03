@@ -218,6 +218,13 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /navigations`
 - `GET /slideshows/:id`
 
+Song song với JSON API, frontend cung cấp feed/download dạng văn bản tĩnh để các đối tác tích hợp:
+
+- `GET /{locale}/[t/{tenant}/]news/feed.xml` → RSS 2.0 Tin tức theo tenant/locale.
+- `GET /{locale}/[t/{tenant}/]events/calendar.ics` → iCalendar cho sự kiện sắp diễn ra (giới hạn 100 sự kiện mới nhất).
+
+Các feed này sử dụng helper `textResponseWithCache` (mở rộng từ `jsonResponseWithCache`) để sinh ETag + Cache-Control tương tự API JSON.
+
 Áp dụng `jsonResponseWithCache` (helper `src/lib/http.ts`) để tự động sinh ETag + header `Cache-Control` cho mọi phản hồi 200. TTL đọc từ `settings.revalidateSeconds` (global → override per tenant) giúp đồng bộ chiến lược cache giữa CDN/API.
 
 ## ISR & Webhook
