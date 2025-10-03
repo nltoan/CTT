@@ -210,7 +210,8 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 ### Trang Thư viện & chi tiết
 
 - Route `/[locale]/galleries` (và `/[locale]/t/[tenant]/galleries`) đọc `searchParams` gồm `category`, `tag`, `q`, `sort`, `page` để render danh sách bộ sưu tập ảnh/video.
-- `getGalleryListing` trả về `{items, meta: {totalItems, totalPages, page, limit}}` và bộ lọc (categories/tags) để hiển thị form GET, nút “Bỏ lọc” và component `Pagination` dùng chung.
+- `getGalleryListing` trả về `{items, meta: {totalItems, totalPages, page, limit}}` và `getGalleryFilters` cung cấp facet `categories[]`/`tags[]` dạng `{key, slug, label, count}` để dựng dropdown, pill filter và build URL chuẩn hoá.
+- Bổ sung tuyến `/galleries/category/[slug]` và `/galleries/tag/[slug]` (bao gồm biến thể multi-tenant) với metadata/hreflang riêng, khoá bộ lọc tương ứng, JSON-LD `ItemList` và static params sinh từ seed galleries.
 - JSON-LD `ItemList` được sinh qua `buildGalleryListJsonLd`, giúp các bộ sưu tập xuất hiện như một danh sách media trong công cụ tìm kiếm.
 - Trang chi tiết `/galleries/[slug]` render `createGalleryMetadata`, `buildGalleryJsonLd`, breadcrumbs và hiển thị media theo layout `grid` hoặc `masonry` tùy cấu hình, kèm fallback khi gallery trống.
 - Block `image-gallery` chấp nhận thuộc tính `source: {type: 'gallery', slug, limit, sort}` để nạp dữ liệu preview trực tiếp từ collection gallery, đồng thời vẫn hỗ trợ danh sách media inline.

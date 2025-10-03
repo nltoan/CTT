@@ -1,7 +1,7 @@
 import {listPagesByTenant} from '@data/pages';
 import {listPostsByTenant, listPostCategories, listPostTags} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
-import {listGalleriesByTenant} from '@data/galleries';
+import {listGalleriesByTenant, listGalleryCategories, listGalleryTags} from '@data/galleries';
 import {listPeopleByTenant} from '@data/people';
 import {listDisciplinesByTenant} from '@data/disciplines';
 import {tenants} from '@data/tenants';
@@ -180,6 +180,50 @@ export function getTenantGalleryStaticParams() {
         locale,
         tenant: tenant.slug,
         slug: gallery.slug
+      }))
+    )
+  );
+}
+
+export function getRootGalleryCategoryStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listGalleryCategories({tenantId: tenant.id, locale}).map((category) => ({
+      locale,
+      category: category.slug
+    }))
+  );
+}
+
+export function getTenantGalleryCategoryStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listGalleryCategories({tenantId: tenant.id, locale}).map((category) => ({
+        tenant: tenant.slug,
+        locale,
+        category: category.slug
+      }))
+    )
+  );
+}
+
+export function getRootGalleryTagStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listGalleryTags({tenantId: tenant.id, locale}).map((tag) => ({
+      locale,
+      tag: tag.slug
+    }))
+  );
+}
+
+export function getTenantGalleryTagStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listGalleryTags({tenantId: tenant.id, locale}).map((tag) => ({
+        tenant: tenant.slug,
+        locale,
+        tag: tag.slug
       }))
     )
   );

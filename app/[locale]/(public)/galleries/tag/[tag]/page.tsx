@@ -1,81 +1,123 @@
 import type {Metadata} from 'next';
+import {notFound} from 'next/navigation';
 
 import {GalleryCollectionPage} from '@components/pages/GalleryCollectionPage';
 import {getNavigation} from '@lib/pages';
 import {
-  getGalleryCategoryBySlug,
   getGalleryFilters,
   getGalleryListing,
-  getGalleryTagBySlug
+  getGalleryTagBySlug,
+  getGalleryCategoryBySlug
 } from '@lib/galleries';
 import {createCollectionMetadata, buildGalleryListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
-import {getSettingsForTenant} from '@lib/settings';
+import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
+import {getRootGalleryTagStaticParams} from '@lib/static-paths';
 
-import type {SearchParams} from './utils';
-import {normalizeGallerySearchParams} from './utils';
+import type {SearchParams} from '../../utils';
+import {normalizeGallerySearchParams} from '../../utils';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = DEFAULT_REVALIDATE_SECONDS;
+
+export function generateStaticParams() {
+  return getRootGalleryTagStaticParams();
+}
 
 export async function generateMetadata({
   params,
   searchParams
 }: {
-  params: {locale: 'vi' | 'en'};
+  params: {locale: 'vi' | 'en'; tag: string};
   searchParams?: SearchParams;
 }): Promise<Metadata> {
   const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
     params,
     locale: params.locale
   });
-
+  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
   const normalized = normalizeGallerySearchParams(searchParams);
+
+  const tagFacet = await getGalleryTagBySlug({
+    tenantId: tenant.id,
+    locale,
+    slug: params.tag
+  });
+
   const metadataParams: Record<string, string> = {};
   if (normalized.categorySlug) metadataParams.category = normalized.categorySlug;
-  if (normalized.tagSlug) metadataParams.tag = normalized.tagSlug;
   if (normalized.q) metadataParams.q = normalized.q;
   if (normalized.sort === 'oldest') metadataParams.sort = 'oldest';
   if (normalized.page > 1) metadataParams.page = String(normalized.page);
 
-  const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+  if (!tagFacet) {
+    return createCollectionMetadata({
+      tenant,
+      locale,
+      tenantPath,
+      slugSegments: ['galleries', 'tag', params.tag],
+      title: locale === 'vi' ? 'Thư viện' : 'Galleries',
+      description:
+        locale === 'vi'
+          ? 'Khám phá các bộ sưu tập hình ảnh và video nổi bật từ sự kiện CTT.'
+          : 'Browse curated photo and video galleries from CTT performances and activities.',
+      settings,
+      searchParams: metadataParams
+    });
+  }
+
+  const title =
+    locale === 'vi'
+      ? `Thư viện thẻ #${tagFacet.label}`
+      : `Galleries tagged #${tagFacet.label}`;
+  const description =
+    locale === 'vi'
+      ? `Các bộ sưu tập được gắn thẻ #${tagFacet.label}.`
+      : `Galleries filed under the #${tagFacet.label} tag.`;
 
   return createCollectionMetadata({
     tenant,
     locale,
     tenantPath,
-    slugSegments: ['galleries'],
-    title: locale === 'vi' ? 'Thư viện' : 'Galleries',
-    description:
-      locale === 'vi'
-        ? 'Khám phá các bộ sưu tập hình ảnh và video nổi bật từ sự kiện CTT.'
-        : 'Browse curated photo and video galleries from CTT performances and activities.',
+    slugSegments: ['galleries', 'tag', params.tag],
+    title,
+    description,
     settings,
     searchParams: metadataParams
   });
 }
 
-export default async function GalleriesPage({
+export default async function GalleryTagPage({
   params,
   searchParams
 }: {
-  params: {locale: 'vi' | 'en'};
+  params: {locale: 'vi' | 'en'; tag: string};
   searchParams?: SearchParams;
 }) {
   const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
     params,
     locale: params.locale
   });
-
   const normalized = normalizeGallerySearchParams(searchParams);
-  const baseSegments = [locale, tenantPath.replace(/^\//, ''), 'galleries'].filter(Boolean);
+
+  const tagFacet = await getGalleryTagBySlug({
+    tenantId: tenant.id,
+    locale,
+    slug: params.tag
+  });
+
+  if (!tagFacet) {
+    notFound();
+  }
+
+  const baseSegments = [locale, tenantPath.replace(/^\//, ''), 'galleries', 'tag', params.tag].filter(Boolean);
   const basePath = `/${baseSegments.join('/')}`.replace(/\/+/, '/');
 
-  const [listing, filters, headerNavigation, footerNavigation, settings, categoryFacet, tagFacet] = await Promise.all([
+  const [listing, filters, headerNavigation, footerNavigation, settings, categoryFacet] = await Promise.all([
     getGalleryListing({
       tenantId: tenant.id,
       locale,
       category: normalized.categorySlug,
-      tag: normalized.tagSlug,
+      tag: params.tag,
       q: normalized.q,
       sort: normalized.sort,
       page: normalized.page,
@@ -87,9 +129,6 @@ export default async function GalleriesPage({
     getSettingsForTenant({tenantId: tenant.id, locale}),
     normalized.categorySlug
       ? getGalleryCategoryBySlug({tenantId: tenant.id, locale, slug: normalized.categorySlug})
-      : Promise.resolve(null),
-    normalized.tagSlug
-      ? getGalleryTagBySlug({tenantId: tenant.id, locale, slug: normalized.tagSlug})
       : Promise.resolve(null)
   ]);
 
@@ -120,21 +159,25 @@ export default async function GalleriesPage({
       activeFilters={{
         categorySlug: normalized.categorySlug,
         categoryFacet,
-        tagSlug: normalized.tagSlug,
+        tagSlug: params.tag,
         tagFacet,
         q: normalized.q,
         sort: normalized.sort
       }}
       basePath={basePath}
-      heading={locale === 'vi' ? 'Thư viện hình ảnh & video' : 'Photo & video galleries'}
+      heading={
+        locale === 'vi'
+          ? `Thư viện thẻ #${tagFacet.label}`
+          : `Galleries tagged #${tagFacet.label}`
+      }
       description={
         locale === 'vi'
-          ? 'Tổng hợp các khoảnh khắc đáng nhớ từ cuộc thi và chương trình giao lưu âm nhạc CTT.'
-          : 'Relive standout CTT performances, rehearsals, and behind-the-scenes moments.'
+          ? `Các bộ sưu tập được gắn thẻ #${tagFacet.label}.`
+          : `Galleries filed under the #${tagFacet.label} tag.`
       }
-      searchPlaceholder={locale === 'vi' ? 'Từ khóa, nội dung...' : 'Keyword, content...'}
       clearFiltersHref={basePath}
       galleryListJsonLd={jsonLd}
+      lockTagSelect
     />
   );
 }

@@ -1,5 +1,7 @@
 import {
   findGalleryBySlug,
+  findGalleryCategoryBySlug,
+  findGalleryTagBySlug,
   findGalleryTranslations,
   listGalleriesByTenant,
   listGalleryCategories,
@@ -7,6 +9,7 @@ import {
   searchGalleriesByTenant
 } from '@data/galleries';
 import type {Gallery} from '@types/cms';
+import type {GalleryCategoryFacet, GalleryTagFacet} from '@data/galleries';
 
 export async function getGalleryPreview({
   tenantId,
@@ -107,6 +110,30 @@ export async function getGalleryFilters({
   return {categories, tags};
 }
 
+export async function getGalleryCategoryBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}): Promise<GalleryCategoryFacet | null> {
+  return findGalleryCategoryBySlug({tenantId, locale, slug});
+}
+
+export async function getGalleryTagBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}): Promise<GalleryTagFacet | null> {
+  return findGalleryTagBySlug({tenantId, locale, slug});
+}
+
 export async function getGalleryTranslations({
   translationKey,
   galleryId
@@ -120,3 +147,4 @@ export async function getGalleryTranslations({
 export type GalleryPreview = Awaited<ReturnType<typeof getGalleryPreview>>;
 export type GalleryListing = Awaited<ReturnType<typeof getGalleryListing>>;
 export type GalleryFilters = Awaited<ReturnType<typeof getGalleryFilters>>;
+export type {GalleryCategoryFacet, GalleryTagFacet};

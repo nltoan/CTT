@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation} from '@lib/pages';
-import {getGallery} from '@lib/galleries';
+import {getGallery, getGalleryCategoryBySlug, getGalleryTagBySlug} from '@lib/galleries';
 import {
   createGalleryMetadata,
   buildGalleryJsonLd,
@@ -55,10 +55,21 @@ export default async function GalleryDetail({
     notFound();
   }
 
-  const [headerNavigation, footerNavigation, settings] = await Promise.all([
+  const [headerNavigation, footerNavigation, settings, categoryFacet, tagFacets] = await Promise.all([
     getNavigation({tenantId: tenant.id, key: 'header', locale}),
     getNavigation({tenantId: tenant.id, key: 'footer', locale}),
-    getSettingsForTenant({tenantId: tenant.id, locale})
+    getSettingsForTenant({tenantId: tenant.id, locale}),
+    gallery.category
+      ? getGalleryCategoryBySlug({tenantId: tenant.id, locale, slug: gallery.category})
+      : Promise.resolve(null),
+    gallery.tags && gallery.tags.length
+      ? Promise.all(
+          gallery.tags.map(async (tag) => ({
+            slug: tag,
+            facet: await getGalleryTagBySlug({tenantId: tenant.id, locale, slug: tag})
+          }))
+        )
+      : Promise.resolve([])
   ]);
 
   const jsonLd = buildGalleryJsonLd({gallery, tenant, locale, tenantPath, settings});
@@ -100,23 +111,23 @@ export default async function GalleryDetail({
               {locale === 'vi' ? '← Quay lại Thư viện' : '← Back to Galleries'}
             </Link>
             <header className="space-y-4">
-              {gallery.category ? (
+              {categoryFacet ? (
                 <span className="inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-                  {gallery.category}
+                  {categoryFacet.label}
                 </span>
               ) : null}
               <h1 className="font-display text-4xl text-secondary">{gallery.title}</h1>
               {gallery.description ? (
                 <p className="text-base text-gray-600">{gallery.description}</p>
               ) : null}
-              {gallery.tags?.length ? (
+              {tagFacets.length ? (
                 <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-500">
-                  {gallery.tags.map((tag) => (
+                  {tagFacets.map(({slug, facet}) => (
                     <span
-                      key={tag}
+                      key={slug}
                       className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-medium uppercase tracking-wide"
                     >
-                      #{tag}
+                      #{facet?.label ?? slug}
                     </span>
                   ))}
                 </div>

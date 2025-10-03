@@ -1,8 +1,165 @@
 import type {Gallery} from '@types/cms';
 
+type Locale = 'vi' | 'en';
+
+type GalleryCategoryDictionaryEntry = {
+  slug?: string;
+  labels: Record<Locale, string>;
+  descriptions?: Partial<Record<Locale, string>>;
+};
+
+type GalleryTagDictionaryEntry = {
+  slug?: string;
+  labels: Record<Locale, string>;
+};
+
+export type GalleryCategoryFacet = {
+  key: string;
+  slug: string;
+  label: string;
+  count: number;
+  description?: string;
+};
+
+export type GalleryTagFacet = {
+  key: string;
+  slug: string;
+  label: string;
+  count: number;
+};
+
+const CATEGORY_DICTIONARY: Record<string, GalleryCategoryDictionaryEntry> = {
+  performance: {
+    labels: {
+      vi: 'Biểu diễn',
+      en: 'Performances'
+    },
+    descriptions: {
+      vi: 'Các tiết mục biểu diễn nổi bật trên sân khấu và gala của cuộc thi CTT.',
+      en: 'Signature performances and gala highlights from the CTT stages.'
+    }
+  },
+  'behind-the-scenes': {
+    labels: {
+      vi: 'Hậu trường',
+      en: 'Behind the scenes'
+    },
+    descriptions: {
+      vi: 'Khoảnh khắc chuẩn bị, tập dượt và hoạt động hậu trường của thí sinh cùng ekip.',
+      en: 'Rehearsal and backstage stories featuring contestants, crew, and mentors.'
+    }
+  },
+  education: {
+    labels: {
+      vi: 'Workshop & đào tạo',
+      en: 'Workshops & education'
+    },
+    descriptions: {
+      vi: 'Lớp học masterclass, chương trình giao lưu và hoạt động giáo dục âm nhạc.',
+      en: 'Masterclasses, clinics, and educational exchanges hosted by CTT.'
+    }
+  }
+};
+
+const TAG_DICTIONARY: Record<string, GalleryTagDictionaryEntry> = {
+  concert: {
+    labels: {
+      vi: 'concert',
+      en: 'concert'
+    }
+  },
+  gala: {
+    labels: {
+      vi: 'gala',
+      en: 'gala'
+    }
+  },
+  award: {
+    labels: {
+      vi: 'award',
+      en: 'award'
+    }
+  },
+  rehearsal: {
+    labels: {
+      vi: 'rehearsal',
+      en: 'rehearsal'
+    }
+  },
+  team: {
+    labels: {
+      vi: 'team',
+      en: 'team'
+    }
+  },
+  orchestra: {
+    labels: {
+      vi: 'orchestra',
+      en: 'orchestra'
+    }
+  },
+  student: {
+    labels: {
+      vi: 'student',
+      en: 'student'
+    }
+  },
+  masterclass: {
+    labels: {
+      vi: 'masterclass',
+      en: 'masterclass'
+    }
+  },
+  violin: {
+    labels: {
+      vi: 'violin',
+      en: 'violin'
+    }
+  }
+};
+
+function humanize(value: string) {
+  return value
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function resolveCategoryFacet({
+  key,
+  locale,
+  count
+}: {
+  key: string;
+  locale: Locale;
+  count: number;
+}): GalleryCategoryFacet {
+  const config = CATEGORY_DICTIONARY[key];
+  const slug = config?.slug ?? key;
+  const label = config?.labels?.[locale] ?? humanize(key);
+  const description = config?.descriptions?.[locale];
+  return {key, slug, label, count, description};
+}
+
+function resolveTagFacet({
+  key,
+  locale,
+  count
+}: {
+  key: string;
+  locale: Locale;
+  count: number;
+}): GalleryTagFacet {
+  const config = TAG_DICTIONARY[key];
+  const slug = config?.slug ?? key;
+  const label = config?.labels?.[locale] ?? humanize(key);
+  return {key, slug, label, count};
+}
+
 type GallerySearchOptions = {
   tenantId: string;
-  locale: 'vi' | 'en';
+  locale: Locale;
   limit?: number;
   category?: string;
   tag?: string;
@@ -555,7 +712,7 @@ export function findGalleryBySlug({
   slug
 }: {
   tenantId: string;
-  locale: 'vi' | 'en';
+  locale: Locale;
   slug: string;
 }) {
   return galleries.find((gallery) => gallery.tenantId === tenantId && gallery.locale === locale && gallery.slug === slug);
@@ -583,15 +740,24 @@ export function listGalleryCategories({
   locale
 }: {
   tenantId: string;
-  locale: 'vi' | 'en';
-}) {
-  return Array.from(
-    new Set(
-      galleries
-        .filter((gallery) => gallery.tenantId === tenantId && gallery.locale === locale && gallery.category)
-        .map((gallery) => gallery.category as string)
-    )
-  );
+  locale: Locale;
+}): GalleryCategoryFacet[] {
+  const counts = new Map<string, number>();
+
+  for (const gallery of galleries) {
+    if (gallery.tenantId !== tenantId || gallery.locale !== locale) {
+      continue;
+    }
+    if (!gallery.category) {
+      continue;
+    }
+    const current = counts.get(gallery.category) ?? 0;
+    counts.set(gallery.category, current + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([key, count]) => resolveCategoryFacet({key, count, locale}))
+    .sort((a, b) => a.label.localeCompare(b.label, locale === 'vi' ? 'vi' : 'en', {sensitivity: 'base'}));
 }
 
 export function listGalleryTags({
@@ -599,13 +765,48 @@ export function listGalleryTags({
   locale
 }: {
   tenantId: string;
-  locale: 'vi' | 'en';
+  locale: Locale;
+}): GalleryTagFacet[] {
+  const counts = new Map<string, number>();
+
+  for (const gallery of galleries) {
+    if (gallery.tenantId !== tenantId || gallery.locale !== locale) {
+      continue;
+    }
+    if (!Array.isArray(gallery.tags)) {
+      continue;
+    }
+    for (const tag of gallery.tags) {
+      const current = counts.get(tag) ?? 0;
+      counts.set(tag, current + 1);
+    }
+  }
+
+  return Array.from(counts.entries())
+    .map(([key, count]) => resolveTagFacet({key, count, locale}))
+    .sort((a, b) => a.label.localeCompare(b.label, locale === 'vi' ? 'vi' : 'en', {sensitivity: 'base'}));
+}
+
+export function findGalleryCategoryBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: Locale;
+  slug: string;
 }) {
-  return Array.from(
-    new Set(
-      galleries
-        .filter((gallery) => gallery.tenantId === tenantId && gallery.locale === locale)
-        .flatMap((gallery) => gallery.tags ?? [])
-    )
-  );
+  return listGalleryCategories({tenantId, locale}).find((category) => category.slug === slug) ?? null;
+}
+
+export function findGalleryTagBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: Locale;
+  slug: string;
+}) {
+  return listGalleryTags({tenantId, locale}).find((tag) => tag.slug === slug) ?? null;
 }

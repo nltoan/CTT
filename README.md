@@ -126,7 +126,7 @@ API public tương ứng:
 - `GET /api/public/v1/events/:slug?tenant=&locale=` (chi tiết sự kiện cùng block nội dung, metadata)
 - `GET /api/public/v1/disciplines?tenant=&locale=&page=&limit=&category=&level=&q=`
 - `GET /api/public/v1/disciplines/:slug?tenant=&locale=`
-- `GET /api/public/v1/galleries?tenant=&locale=&page=&limit=&category=&tag=&q=&sort=` (danh sách gallery + meta/phân trang và filters)
+- `GET /api/public/v1/galleries?tenant=&locale=&page=&limit=&category=&tag=&q=&sort=` (danh sách gallery + meta/phân trang, `filters.categories[]`/`filters.tags[]` trả về `{slug,label,count}` để render facet hoặc build URL category/tag)
 - `GET /api/public/v1/galleries/:slug?tenant=&locale=` (chi tiết gallery)
 - `GET /api/public/v1/search?tenant=&locale=&q=&type=&limit=` (kết quả tìm kiếm tổng hợp theo danh mục nội dung)
 

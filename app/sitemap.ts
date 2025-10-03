@@ -4,7 +4,7 @@ import {tenants} from '@data/tenants';
 import {listPagesByTenant} from '@data/pages';
 import {listPostsByTenant, listPostCategories, listPostTags} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
-import {listGalleriesByTenant} from '@data/galleries';
+import {listGalleriesByTenant, listGalleryCategories, listGalleryTags} from '@data/galleries';
 import {listPeopleByTenant} from '@data/people';
 import {listDisciplinesByTenant} from '@data/disciplines';
 import {buildAbsoluteUrl, buildPath} from '@lib/seo';
@@ -134,6 +134,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
 
       const galleries = listGalleriesByTenant({tenantId: tenant.id, locale});
+      const galleryCategories = listGalleryCategories({tenantId: tenant.id, locale});
+      const galleryTags = listGalleryTags({tenantId: tenant.id, locale});
       const people = listPeopleByTenant({tenantId: tenant.id, locale});
       galleries.forEach((gallery) => {
         const galleryPath = buildPath({locale, tenantPath, slugSegments: ['galleries', gallery.slug]});
@@ -142,6 +144,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
           lastModified: toDate(gallery.updatedAt),
           changeFrequency: 'weekly',
           priority: 0.65
+        });
+      });
+      galleryCategories.forEach((category) => {
+        const categoryPath = buildPath({
+          locale,
+          tenantPath,
+          slugSegments: ['galleries', 'category', category.slug]
+        });
+        const latestInCategory = galleries.find((gallery) => gallery.category === category.key);
+        entries.push({
+          url: buildAbsoluteUrl(categoryPath),
+          lastModified: toDate(latestInCategory?.updatedAt ?? galleries[0]?.updatedAt),
+          changeFrequency: 'weekly',
+          priority: 0.6
+        });
+      });
+      galleryTags.forEach((tag) => {
+        const tagPath = buildPath({locale, tenantPath, slugSegments: ['galleries', 'tag', tag.slug]});
+        const latestWithTag = galleries.find((gallery) => gallery.tags?.includes(tag.key));
+        entries.push({
+          url: buildAbsoluteUrl(tagPath),
+          lastModified: toDate(latestWithTag?.updatedAt ?? galleries[0]?.updatedAt),
+          changeFrequency: 'weekly',
+          priority: 0.55
         });
       });
       const galleriesPath = buildPath({locale, tenantPath, slugSegments: ['galleries']});
