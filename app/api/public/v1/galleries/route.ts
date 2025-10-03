@@ -2,6 +2,11 @@ import {getGalleryFilters, getGalleryListing} from '@lib/galleries';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
 import {resolveTenantFromParams} from '@lib/tenant';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 function parseNumber(value: string | null | undefined) {
   if (!value) {
@@ -12,6 +17,15 @@ function parseNumber(value: string | null | undefined) {
 }
 
 export async function GET(request: Request) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'galleries:list'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const tenantSlug = searchParams.get('tenant') ?? undefined;
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
@@ -50,6 +64,7 @@ export async function GET(request: Request) {
     request,
     ttl,
     cacheTags: [`tenant:${tenant.id}`, 'collection:galleries'],
+    headers: rateLimit.headers,
     body: {
       data: listing.items,
       meta: {

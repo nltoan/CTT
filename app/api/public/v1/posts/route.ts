@@ -2,8 +2,22 @@ import {getPostListing} from '@lib/pages';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 export async function GET(request: Request) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'posts:list'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const tenantSlug = searchParams.get('tenant');
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
@@ -54,6 +68,7 @@ export async function GET(request: Request) {
       }
     },
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, 'collection:posts']
+    cacheTags: [`tenant:${tenant.id}`, 'collection:posts'],
+    headers: rateLimit.headers
   });
 }

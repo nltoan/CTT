@@ -2,8 +2,22 @@ import {getPost, getRelatedPosts} from '@lib/pages';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 export async function GET(request: Request, context: {params: {slug: string}}) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'posts:detail'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const tenantSlug = searchParams.get('tenant');
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
@@ -16,7 +30,8 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
       request,
       body: {error: 'Post not found'},
       status: 404,
-      ttl: 0
+      ttl: 0,
+      headers: rateLimit.headers
     });
   }
 
@@ -35,6 +50,7 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
     request,
     body: {data: post, related},
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, `post:${post.id}`]
+    cacheTags: [`tenant:${tenant.id}`, `post:${post.id}`],
+    headers: rateLimit.headers
   });
 }

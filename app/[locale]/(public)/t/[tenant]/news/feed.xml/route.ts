@@ -3,6 +3,11 @@ import {textResponseWithCache} from '@lib/http';
 import {getRecentPosts} from '@lib/pages';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 export const revalidate = DEFAULT_REVALIDATE_SECONDS;
 
@@ -10,6 +15,15 @@ export async function GET(
   request: Request,
   {params}: {params: {locale: 'vi' | 'en'; tenant: string}}
 ) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: `rss:${params.tenant}:${params.locale}`
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {tenant, locale, tenantPath} = readTenantResolutionFromRequest({
     params: {tenant: params.tenant, slug: ['news', 'feed.xml']},
     locale: params.locale
@@ -28,6 +42,7 @@ export async function GET(
     ttl: settings.revalidateSeconds,
     contentType: 'application/rss+xml; charset=utf-8',
     headers: {
+      ...rateLimit.headers,
       'Content-Disposition': `inline; filename="${tenant.slug}-news-${locale}.xml"`
     },
     cacheTags: ['news-feed', tenant.id]

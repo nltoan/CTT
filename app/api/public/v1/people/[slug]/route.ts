@@ -2,8 +2,22 @@ import {getPersonBySlug, getRelatedPeople} from '@lib/people';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 export async function GET(request: Request, context: {params: {slug: string}}) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'people:detail'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const tenantSlug = searchParams.get('tenant') ?? undefined;
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
@@ -20,7 +34,8 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
       request,
       body: {error: 'Person not found'},
       status: 404,
-      ttl: 0
+      ttl: 0,
+      headers: rateLimit.headers
     });
   }
 
@@ -37,6 +52,7 @@ export async function GET(request: Request, context: {params: {slug: string}}) {
     request,
     body: {data: person, related},
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, `person:${person.id}`]
+    cacheTags: [`tenant:${tenant.id}`, `person:${person.id}`],
+    headers: rateLimit.headers
   });
 }

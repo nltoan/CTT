@@ -2,8 +2,22 @@ import {getEventListing} from '@lib/events';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 export async function GET(request: Request) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'events:list'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const tenantSlug = searchParams.get('tenant');
   const locale = (searchParams.get('locale') as 'vi' | 'en') ?? 'vi';
@@ -39,6 +53,7 @@ export async function GET(request: Request) {
     request,
     body: {data: items, meta},
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, 'collection:events']
+    cacheTags: [`tenant:${tenant.id}`, 'collection:events'],
+    headers: rateLimit.headers
   });
 }

@@ -4,6 +4,11 @@ import {getApiCacheTtl} from '@lib/settings';
 import {getDefaultTenant, assertLocale} from '@lib/tenant';
 import {searchAllContent, type SearchType} from '@lib/search';
 import {defaultLocale} from '@i18n/config';
+import {
+  DEFAULT_PUBLIC_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 
 function parseTypes(values: string[]): SearchType[] | undefined {
   if (!values || values.length === 0) {
@@ -23,6 +28,15 @@ function parseTypes(values: string[]): SearchType[] | undefined {
 }
 
 export async function GET(request: Request) {
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_PUBLIC_RATE_LIMIT,
+    identifier: 'search:query'
+  });
+
+  if (!rateLimit.ok) {
+    return tooManyRequestsResponse(rateLimit);
+  }
+
   const {searchParams} = new URL(request.url);
   const query = searchParams.get('q') ?? '';
   const tenantSlug = searchParams.get('tenant') ?? undefined;
@@ -59,6 +73,7 @@ export async function GET(request: Request) {
       }
     },
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, 'search']
+    cacheTags: [`tenant:${tenant.id}`, 'search'],
+    headers: rateLimit.headers
   });
 }

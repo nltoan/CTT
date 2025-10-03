@@ -1,6 +1,11 @@
 import {NextResponse} from 'next/server';
 
-import {checkRateLimit, submitForm} from '@lib/forms';
+import {submitForm} from '@lib/forms';
+import {
+  DEFAULT_FORM_RATE_LIMIT,
+  enforceRateLimit,
+  tooManyRequestsResponse
+} from '@lib/rate-limit';
 import {locales, type Locale} from '@i18n/config';
 
 export async function POST(request: Request, {params}: {params: {key: string}}) {
@@ -37,24 +42,18 @@ export async function POST(request: Request, {params}: {params: {key: string}}) 
   }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? request.headers.get('x-real-ip');
-  const rateLimit = checkRateLimit({formKey: key, tenantId, ip});
+  const rateLimit = enforceRateLimit(request, {
+    ...DEFAULT_FORM_RATE_LIMIT,
+    identifier: `${tenantId}:${key}`
+  });
 
-  if (!rateLimit.allowed) {
-    const responseInit: ResponseInit = {status: 429};
-    if (rateLimit.retryAfter) {
-      responseInit.headers = {'Retry-After': rateLimit.retryAfter.toString()};
-    }
+  if (!rateLimit.ok) {
+    const message =
+      locale === 'vi'
+        ? 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.'
+        : 'Too many requests. Please try again later.';
 
-    return NextResponse.json(
-      {
-        message:
-          locale === 'vi'
-            ? 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.'
-            : 'Too many requests. Please try again later.',
-        retryAfter: rateLimit.retryAfter
-      },
-      responseInit
-    );
+    return tooManyRequestsResponse(rateLimit, message);
   }
 
   const metadata = {
@@ -77,9 +76,15 @@ export async function POST(request: Request, {params}: {params: {key: string}}) 
     }
 
     return NextResponse.json(payload, {
-      status: result.status
+      status: result.status,
+      headers: rateLimit.headers
     });
   }
 
-  return NextResponse.json({message: result.message});
+  return NextResponse.json(
+    {message: result.message},
+    {
+      headers: rateLimit.headers
+    }
+  );
 }

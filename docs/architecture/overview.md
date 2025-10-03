@@ -239,6 +239,8 @@ Các feed này sử dụng helper `textResponseWithCache` (mở rộng từ `jso
 
 Áp dụng `jsonResponseWithCache` (helper `src/lib/http.ts`) để tự động sinh ETag + header `Cache-Control` cho mọi phản hồi 200. TTL đọc từ `settings.revalidateSeconds` (global → override per tenant) giúp đồng bộ chiến lược cache giữa CDN/API.
 
+- Module `src/lib/rate-limit.ts` cung cấp rate limit in-memory (per IP + route identifier) áp dụng cho toàn bộ API JSON `/api/public/v1/*`, webhook form submission và các feed văn bản (RSS/ICS). Header `X-RateLimit-*` luôn có mặt trong response (kể cả lỗi 404) để client biết trạng thái quota.
+
 ## ISR & Webhook
 
 Payload webhook (mỗi collection) gọi `POST https://frontend.vercel.app/api/revalidate` với payload:
