@@ -2,6 +2,8 @@ import {findPageBySlug} from '@data/pages';
 import {findNavigation} from '@data/navigations';
 import {
   findPostBySlug,
+  findPostCategoryBySlug,
+  findPostTagBySlug,
   findRelatedPosts,
   listPostCategories,
   listPostsByTenant,
@@ -120,4 +122,28 @@ export async function getPostFilters({
   ]);
 
   return {categories, tags};
+}
+
+export async function getPostCategoryBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}) {
+  return findPostCategoryBySlug({tenantId, locale, slug});
+}
+
+export async function getPostTagBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}) {
+  return findPostTagBySlug({tenantId, locale, slug});
 }

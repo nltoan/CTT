@@ -2,11 +2,12 @@ import type {MetadataRoute} from 'next';
 
 import {tenants} from '@data/tenants';
 import {listPagesByTenant} from '@data/pages';
-import {listPostsByTenant} from '@data/posts';
+import {listPostsByTenant, listPostCategories, listPostTags} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
 import {listGalleriesByTenant} from '@data/galleries';
 import {listPeopleByTenant} from '@data/people';
 import {buildAbsoluteUrl, buildPath} from '@lib/seo';
+import {ensureSlug} from '@/utils/slug';
 
 function toDate(value?: string) {
   return value ? new Date(value) : undefined;
@@ -49,6 +50,46 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: toDate(latestPost?.updatedAt ?? latestPost?.publishedAt),
         changeFrequency: 'weekly',
         priority: 0.8
+      });
+
+      const postCategories = listPostCategories({tenantId: tenant.id, locale});
+      postCategories.forEach((category) => {
+        const latestInCategory = posts.find((post) =>
+          post.category
+            ? ensureSlug(post.category, post.category.toLowerCase()) === category.slug
+            : false
+        );
+        const categoryPath = buildPath({
+          locale,
+          tenantPath,
+          slugSegments: ['news', 'category', category.slug]
+        });
+        entries.push({
+          url: buildAbsoluteUrl(categoryPath),
+          lastModified: toDate(latestInCategory?.updatedAt ?? latestInCategory?.publishedAt),
+          changeFrequency: 'weekly',
+          priority: 0.6
+        });
+      });
+
+      const postTags = listPostTags({tenantId: tenant.id, locale});
+      postTags.forEach((tag) => {
+        const latestWithTag = posts.find((post) =>
+          post.tags?.some(
+            (tagItem) => ensureSlug(tagItem, tagItem.toLowerCase()) === tag.slug
+          )
+        );
+        const tagPath = buildPath({
+          locale,
+          tenantPath,
+          slugSegments: ['news', 'tag', tag.slug]
+        });
+        entries.push({
+          url: buildAbsoluteUrl(tagPath),
+          lastModified: toDate(latestWithTag?.updatedAt ?? latestWithTag?.publishedAt),
+          changeFrequency: 'weekly',
+          priority: 0.55
+        });
       });
 
       const events = listEventsByTenant({tenantId: tenant.id, locale});

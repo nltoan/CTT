@@ -74,6 +74,50 @@ export function getTenantPostStaticParams() {
   );
 }
 
+export function getRootPostCategoryStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listPostCategories({tenantId: tenant.id, locale}).map((category) => ({
+      locale,
+      category: category.slug
+    }))
+  );
+}
+
+export function getTenantPostCategoryStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listPostCategories({tenantId: tenant.id, locale}).map((category) => ({
+        tenant: tenant.slug,
+        locale,
+        category: category.slug
+      }))
+    )
+  );
+}
+
+export function getRootPostTagStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listPostTags({tenantId: tenant.id, locale}).map((tag) => ({
+      locale,
+      tag: tag.slug
+    }))
+  );
+}
+
+export function getTenantPostTagStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listPostTags({tenantId: tenant.id, locale}).map((tag) => ({
+        tenant: tenant.slug,
+        locale,
+        tag: tag.slug
+      }))
+    )
+  );
+}
+
 export function getRootEventStaticParams() {
   const tenant = getDefaultTenant();
   return tenantLocales(tenant).flatMap((locale) =>

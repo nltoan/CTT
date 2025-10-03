@@ -1,4 +1,17 @@
 import type {Post} from '@types/cms';
+import {ensureSlug} from '../utils/slug';
+
+export type PostCategoryFacet = {
+  label: string;
+  slug: string;
+  count: number;
+};
+
+export type PostTagFacet = {
+  label: string;
+  slug: string;
+  count: number;
+};
 
 const DEFAULT_AUTHORS = {
   vi: 'Ban tổ chức CTT',
@@ -265,15 +278,30 @@ export function listPostCategories({
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
-}) {
+}): PostCategoryFacet[] {
   const filtered = filterPosts({tenantId, locale});
-  return Array.from(
-    new Set(
-      filtered
-        .map((post) => post.category)
-        .filter((category): category is string => Boolean(category))
-    )
-  ).sort((a, b) => a.localeCompare(b));
+  const map = new Map<string, PostCategoryFacet>();
+
+  filtered.forEach((post) => {
+    if (!post.category) {
+      return;
+    }
+    const slug = ensureSlug(post.category, `category-${map.size + 1}`);
+    const current = map.get(slug);
+    if (current) {
+      current.count += 1;
+    } else {
+      map.set(slug, {
+        label: post.category,
+        slug,
+        count: 1
+      });
+    }
+  });
+
+  return Array.from(map.values()).sort((a, b) =>
+    a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'vi', {sensitivity: 'base'})
+  );
 }
 
 export function listPostTags({
@@ -282,11 +310,62 @@ export function listPostTags({
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
-}) {
+}): PostTagFacet[] {
   const filtered = filterPosts({tenantId, locale});
-  return Array.from(
-    new Set(filtered.flatMap((post) => post.tags ?? []).filter((tag): tag is string => Boolean(tag)))
-  ).sort((a, b) => a.localeCompare(b));
+  const map = new Map<string, PostTagFacet>();
+
+  filtered.forEach((post) => {
+    (post.tags ?? []).forEach((tag) => {
+      if (!tag) {
+        return;
+      }
+      const slug = ensureSlug(tag, `tag-${map.size + 1}`);
+      const current = map.get(slug);
+      if (current) {
+        current.count += 1;
+      } else {
+        map.set(slug, {
+          label: tag,
+          slug,
+          count: 1
+        });
+      }
+    });
+  });
+
+  return Array.from(map.values()).sort((a, b) =>
+    a.label.localeCompare(b.label, locale === 'en' ? 'en' : 'vi', {sensitivity: 'base'})
+  );
+}
+
+export function findPostCategoryBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}): PostCategoryFacet | undefined {
+  if (!slug) {
+    return undefined;
+  }
+  return listPostCategories({tenantId, locale}).find((category) => category.slug === slug);
+}
+
+export function findPostTagBySlug({
+  tenantId,
+  locale,
+  slug
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slug: string;
+}): PostTagFacet | undefined {
+  if (!slug) {
+    return undefined;
+  }
+  return listPostTags({tenantId, locale}).find((tagItem) => tagItem.slug === slug);
 }
 
 export function findPostBySlug({

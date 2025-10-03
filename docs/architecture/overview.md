@@ -172,9 +172,10 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 ### Trang Tin tức & phân trang
 
 - Route `/[locale]/news` (và biến thể `/[locale]/t/[tenant]/news`) đọc `searchParams` để áp dụng bộ lọc `q`, `category`, `tag` và phân trang `page`.
+- Trang chuyên mục (`/news/category/[slug]`) và trang thẻ (`/news/tag/[slug]`) tái sử dụng cùng pipeline, tự động lock bộ lọc tương ứng nhưng vẫn giữ được kết hợp `category`/`tag`/`q` còn lại.
 - Server component gọi `getPostListing` (wrapper `searchPostsByTenant`) trả về `{items, total, totalPages, page, hasMore}` để render danh sách.
 - Bộ lọc hiển thị dạng chip, form tìm kiếm GET, nút “Xóa bộ lọc”; canonical URL bổ sung query string cần thiết cho SEO/hreflang.
-- Component `components/layout/Pagination.tsx` render prev/next + số trang, hỗ trợ locale để đổi label.
+- Component `components/pages/NewsCollectionPage.tsx` gom logic render danh sách, pagination, trạng thái trống và JSON-LD để mọi route news dùng chung; `components/layout/Pagination.tsx` xử lý prev/next + số trang, hỗ trợ locale để đổi label.
 - Trang chi tiết `/news/[slug]` hiển thị danh sách tag của bài viết và module “Bài viết liên quan” dựa trên category/tag chung (`getRelatedPosts`).
 
 ### Trang Sự kiện & chi tiết
