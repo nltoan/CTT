@@ -1,5 +1,6 @@
 import type {Post} from '@types/cms';
 import {ensureSlug} from '../utils/slug';
+import {matchesPublicationState} from './utils/publication';
 
 export type PostCategoryFacet = {
   label: string;
@@ -179,15 +180,17 @@ type PostFilterInput = {
   category?: string;
   tag?: string;
   q?: string;
+  includeDrafts?: boolean;
 };
 
-function filterPosts({tenantId, locale, category, tag, q}: PostFilterInput) {
+function filterPosts({tenantId, locale, category, tag, q, includeDrafts}: PostFilterInput) {
   const normalizedCategory = category?.toLowerCase();
   const normalizedTag = tag?.toLowerCase();
   const normalizedQuery = q?.toLowerCase();
 
   return posts
     .filter((post) => post.tenantId === tenantId && post.locale === locale)
+    .filter((post) => matchesPublicationState(post, {includeDrafts}))
     .filter((post) => {
       if (!normalizedCategory) {
         return true;
@@ -221,7 +224,8 @@ export function listPostsByTenant({
   limit,
   category,
   tag,
-  q
+  q,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -229,8 +233,9 @@ export function listPostsByTenant({
   category?: string;
   tag?: string;
   q?: string;
+  includeDrafts?: boolean;
 }) {
-  const filtered = filterPosts({tenantId, locale, category, tag, q});
+  const filtered = filterPosts({tenantId, locale, category, tag, q, includeDrafts});
   return filtered.slice(0, limit ?? filtered.length);
 }
 
@@ -241,7 +246,8 @@ export function searchPostsByTenant({
   limit = 10,
   category,
   tag,
-  q
+  q,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -250,12 +256,13 @@ export function searchPostsByTenant({
   category?: string;
   tag?: string;
   q?: string;
+  includeDrafts?: boolean;
 }) {
   const computedLimit = typeof limit === 'number' && !Number.isNaN(limit) ? limit : 10;
   const safeLimit = Math.max(1, Math.min(computedLimit, 50));
   const computedPage = typeof page === 'number' && !Number.isNaN(page) ? page : 1;
   const safePage = Math.max(1, computedPage);
-  const filtered = filterPosts({tenantId, locale, category, tag, q});
+  const filtered = filterPosts({tenantId, locale, category, tag, q, includeDrafts});
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / safeLimit));
   const normalizedPage = Math.min(safePage, totalPages);
@@ -274,12 +281,14 @@ export function searchPostsByTenant({
 
 export function listPostCategories({
   tenantId,
-  locale
+  locale,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }): PostCategoryFacet[] {
-  const filtered = filterPosts({tenantId, locale});
+  const filtered = filterPosts({tenantId, locale, includeDrafts});
   const map = new Map<string, PostCategoryFacet>();
 
   filtered.forEach((post) => {
@@ -306,12 +315,14 @@ export function listPostCategories({
 
 export function listPostTags({
   tenantId,
-  locale
+  locale,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }): PostTagFacet[] {
-  const filtered = filterPosts({tenantId, locale});
+  const filtered = filterPosts({tenantId, locale, includeDrafts});
   const map = new Map<string, PostTagFacet>();
 
   filtered.forEach((post) => {
@@ -341,44 +352,58 @@ export function listPostTags({
 export function findPostCategoryBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  includeDrafts?: boolean;
 }): PostCategoryFacet | undefined {
   if (!slug) {
     return undefined;
   }
-  return listPostCategories({tenantId, locale}).find((category) => category.slug === slug);
+  return listPostCategories({tenantId, locale, includeDrafts}).find(
+    (category) => category.slug === slug
+  );
 }
 
 export function findPostTagBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  includeDrafts?: boolean;
 }): PostTagFacet | undefined {
   if (!slug) {
     return undefined;
   }
-  return listPostTags({tenantId, locale}).find((tagItem) => tagItem.slug === slug);
+  return listPostTags({tenantId, locale, includeDrafts}).find(
+    (tagItem) => tagItem.slug === slug
+  );
 }
 
 export function findPostBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  includeDrafts?: boolean;
 }) {
   return posts.find(
-    (post) => post.tenantId === tenantId && post.locale === locale && post.slug === slug
+    (post) =>
+      post.tenantId === tenantId &&
+      post.locale === locale &&
+      post.slug === slug &&
+      matchesPublicationState(post, {includeDrafts})
   );
 }
 
@@ -400,7 +425,8 @@ export function findRelatedPosts({
   postId,
   category,
   tags,
-  limit = 3
+  limit = 3,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -408,10 +434,11 @@ export function findRelatedPosts({
   category?: string;
   tags?: string[];
   limit?: number;
+  includeDrafts?: boolean;
 }) {
   const tagSet = new Set((tags ?? []).map((tag) => tag.toLowerCase()));
 
-  const filtered = filterPosts({tenantId, locale})
+  const filtered = filterPosts({tenantId, locale, includeDrafts})
     .filter((post) => post.id !== postId)
     .filter((post) => {
       if (category && post.category === category) {

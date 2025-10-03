@@ -12,13 +12,15 @@ import type {Discipline} from '@types/cms';
 export async function getDisciplines({
   tenantId,
   locale,
-  limit
+  limit,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   limit?: number;
+  preview?: boolean;
 }): Promise<Discipline[]> {
-  return listDisciplinesByTenant({tenantId, locale, limit});
+  return listDisciplinesByTenant({tenantId, locale, limit, includeDrafts: preview});
 }
 
 export async function getDisciplineListing({
@@ -28,7 +30,8 @@ export async function getDisciplineListing({
   limit,
   category,
   level,
-  q
+  q,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -37,32 +40,46 @@ export async function getDisciplineListing({
   category?: string;
   level?: string;
   q?: string;
+  preview?: boolean;
 }) {
-  return searchDisciplinesByTenant({tenantId, locale, page, limit, category, level, q});
+  return searchDisciplinesByTenant({
+    tenantId,
+    locale,
+    page,
+    limit,
+    category,
+    level,
+    q,
+    includeDrafts: preview
+  });
 }
 
 export async function getDiscipline({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findDisciplineBySlug({tenantId, locale, slug});
+  return findDisciplineBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getDisciplineFilters({
   tenantId,
-  locale
+  locale,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  preview?: boolean;
 }) {
   const [categories, levels] = await Promise.all([
-    listDisciplineCategories({tenantId, locale}),
-    listDisciplineLevels({tenantId, locale})
+    listDisciplineCategories({tenantId, locale, includeDrafts: preview}),
+    listDisciplineLevels({tenantId, locale, includeDrafts: preview})
   ]);
 
   return {categories, levels};
@@ -72,14 +89,22 @@ export async function getRelatedDisciplines({
   tenantId,
   locale,
   excludeSlug,
-  limit
+  limit,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   excludeSlug: string;
   limit?: number;
+  preview?: boolean;
 }) {
-  return getDisciplineSuggestions({tenantId, locale, excludeSlug, limit});
+  return getDisciplineSuggestions({
+    tenantId,
+    locale,
+    excludeSlug,
+    limit,
+    includeDrafts: preview
+  });
 }
 
 export async function getDisciplineTranslationLinks({

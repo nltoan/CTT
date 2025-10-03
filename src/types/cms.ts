@@ -1,5 +1,7 @@
 import type {Block, MediaRef} from './blocks';
 
+export type PublicationStatus = 'draft' | 'published' | 'scheduled';
+
 export type TenantSocialLink = {
   id: string;
   label: string;
@@ -53,6 +55,8 @@ export type Page = {
     description?: string;
     image?: string;
   };
+  status?: PublicationStatus;
+  publishedAt?: string;
 };
 
 export type Post = {
@@ -70,6 +74,7 @@ export type Post = {
   author?: string;
   tags?: string[];
   category?: string;
+  status?: PublicationStatus;
 };
 
 export type Event = {
@@ -90,6 +95,8 @@ export type Event = {
   content?: string;
   blocks?: Block[];
   updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
 };
 
 export type DisciplineScheduleItem = {
@@ -120,6 +127,8 @@ export type Discipline = {
   relatedPeople?: string[];
   blocks?: Block[];
   updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
 };
 
 export type PersonSocialProfile = {
@@ -154,6 +163,8 @@ export type Person = {
   updatedAt?: string;
   contactEmail?: string;
   contactPhone?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
 };
 
 export type Sponsor = {
@@ -189,6 +200,8 @@ export type Gallery = {
   layout?: 'grid' | 'masonry';
   items: GalleryItem[];
   updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
 };
 
 export type AnalyticsSettings = {

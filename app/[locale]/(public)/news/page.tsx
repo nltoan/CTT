@@ -4,6 +4,7 @@ import {getNavigation, getPostFilters, getPostListing} from '@lib/pages';
 import {createCollectionMetadata, buildNewsListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant} from '@lib/settings';
+import {readDraftModeState} from '@lib/preview';
 
 import {pickParam, type SearchParams} from './utils';
 
@@ -65,6 +66,7 @@ export default async function NewsIndex({
     params,
     locale: params.locale
   });
+  const preview = readDraftModeState();
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
   const category = pickParam(searchParams?.['category'])?.trim() || undefined;
@@ -84,9 +86,10 @@ export default async function NewsIndex({
       limit,
       category,
       tag,
-      q
+      q,
+      preview
     }),
-    getPostFilters({tenantId: tenant.id, locale})
+    getPostFilters({tenantId: tenant.id, locale, preview})
   ]);
 
   const posts = listing.items;

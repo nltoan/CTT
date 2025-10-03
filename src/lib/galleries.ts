@@ -16,15 +16,17 @@ export async function getGalleryPreview({
   locale,
   slug,
   limit,
-  sort
+  sort,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
   limit?: number;
   sort?: 'latest' | 'oldest';
+  preview?: boolean;
 }) {
-  const gallery = findGalleryBySlug({tenantId, locale, slug});
+  const gallery = findGalleryBySlug({tenantId, locale, slug, includeDrafts: preview});
   if (!gallery) {
     return null;
   }
@@ -44,13 +46,15 @@ export async function getGalleryPreview({
 export async function getGallery({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findGalleryBySlug({tenantId, locale, slug});
+  return findGalleryBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getGalleryListing({
@@ -61,7 +65,8 @@ export async function getGalleryListing({
   category,
   tag,
   q,
-  sort
+  sort,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -71,8 +76,19 @@ export async function getGalleryListing({
   tag?: string;
   q?: string;
   sort?: 'latest' | 'oldest';
+  preview?: boolean;
 }) {
-  return searchGalleriesByTenant({tenantId, locale, page, limit, category, tag, q, sort});
+  return searchGalleriesByTenant({
+    tenantId,
+    locale,
+    page,
+    limit,
+    category,
+    tag,
+    q,
+    sort,
+    includeDrafts: preview
+  });
 }
 
 export async function getGallerySummaries({
@@ -82,7 +98,8 @@ export async function getGallerySummaries({
   category,
   tag,
   q,
-  sort
+  sort,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -91,20 +108,32 @@ export async function getGallerySummaries({
   tag?: string;
   q?: string;
   sort?: 'latest' | 'oldest';
+  preview?: boolean;
 }) {
-  return listGalleriesByTenant({tenantId, locale, limit, category, tag, q, sort});
+  return listGalleriesByTenant({
+    tenantId,
+    locale,
+    limit,
+    category,
+    tag,
+    q,
+    sort,
+    includeDrafts: preview
+  });
 }
 
 export async function getGalleryFilters({
   tenantId,
-  locale
+  locale,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  preview?: boolean;
 }) {
   const [categories, tags] = await Promise.all([
-    listGalleryCategories({tenantId, locale}),
-    listGalleryTags({tenantId, locale})
+    listGalleryCategories({tenantId, locale, includeDrafts: preview}),
+    listGalleryTags({tenantId, locale, includeDrafts: preview})
   ]);
 
   return {categories, tags};
@@ -113,25 +142,29 @@ export async function getGalleryFilters({
 export async function getGalleryCategoryBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }): Promise<GalleryCategoryFacet | null> {
-  return findGalleryCategoryBySlug({tenantId, locale, slug});
+  return findGalleryCategoryBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getGalleryTagBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }): Promise<GalleryTagFacet | null> {
-  return findGalleryTagBySlug({tenantId, locale, slug});
+  return findGalleryTagBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getGalleryTranslations({

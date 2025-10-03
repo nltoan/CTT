@@ -8,6 +8,7 @@ import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@li
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootPostStaticParams} from '@lib/static-paths';
+import {readDraftModeState} from '@lib/preview';
 
 export const revalidate = DEFAULT_REVALIDATE_SECONDS;
 
@@ -24,7 +25,8 @@ export async function generateMetadata({
     params: {tenant: params.tenant, slug: [params.slug]},
     locale: params.locale
   });
-  const post = await getPost({tenantId: tenant.id, locale, slug: params.slug});
+  const preview = readDraftModeState();
+  const post = await getPost({tenantId: tenant.id, locale, slug: params.slug, preview});
 
   if (!post) {
     return {};
@@ -44,7 +46,8 @@ export default async function NewsDetail({
     params: {tenant: params.tenant, slug: [params.slug]},
     locale: params.locale
   });
-  const post = await getPost({tenantId: tenant.id, locale, slug: params.slug});
+  const preview = readDraftModeState();
+  const post = await getPost({tenantId: tenant.id, locale, slug: params.slug, preview});
 
   if (!post) {
     notFound();
@@ -61,7 +64,8 @@ export default async function NewsDetail({
       postId: post.id,
       category: post.category,
       tags: post.tags,
-      limit: 3
+      limit: 3,
+      preview
     })
   ]);
 

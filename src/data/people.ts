@@ -1,4 +1,5 @@
 import type {Person} from '@types/cms';
+import {matchesPublicationState} from './utils/publication';
 
 const DEFAULT_UPDATED_AT = '2024-03-12T09:00:00.000Z';
 
@@ -18,6 +19,8 @@ type PersonSeed = {
   tenantId: string;
   order?: number;
   updatedAt?: string;
+  status?: 'draft' | 'published' | 'scheduled';
+  publishedAt?: string;
   disciplines?: string[];
   photo?: Person['photo'];
   socialLinks?: Person['socialLinks'];
@@ -57,7 +60,9 @@ function createLocalizedPerson(seed: PersonSeed, locale: 'vi' | 'en'): Person {
     blocks: translation.blocks,
     updatedAt: seed.updatedAt ?? DEFAULT_UPDATED_AT,
     contactEmail: seed.contactEmail,
-    contactPhone: seed.contactPhone
+    contactPhone: seed.contactPhone,
+    status: seed.status,
+    publishedAt: seed.publishedAt
   } satisfies Person;
 }
 
@@ -664,14 +669,17 @@ const peopleSeeds: PersonSeed[] = [
 export function listPeopleByTenant({
   tenantId,
   locale,
-  limit
+  limit,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   limit?: number;
+  includeDrafts?: boolean;
 }): Person[] {
   const localized = peopleSeeds
     .filter((person) => person.tenantId === tenantId)
+    .filter((person) => matchesPublicationState(person, {includeDrafts}))
     .map((person) => createLocalizedPerson(person, locale))
     .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 
@@ -687,18 +695,20 @@ export function searchPeopleByTenant({
   locale,
   page = 1,
   limit = 6,
-  q
+  q,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   page?: number;
   limit?: number;
   q?: string;
+  includeDrafts?: boolean;
 }) {
   const normalizedQuery = q?.trim().toLowerCase();
   const normalizedLimit = Math.max(1, Math.min(Number.isFinite(limit) ? Number(limit) : 6, 50));
   const normalizedPage = Math.max(1, Number.isFinite(page) ? Number(page) : 1);
-  const people = listPeopleByTenant({tenantId, locale});
+  const people = listPeopleByTenant({tenantId, locale, includeDrafts});
 
   const filtered = normalizedQuery
     ? people.filter((person) => {
@@ -742,13 +752,20 @@ export function searchPeopleByTenant({
 export function findPersonBySlug({
   tenantId,
   slug,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   slug: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }): Person | undefined {
-  const seed = peopleSeeds.find((person) => person.tenantId === tenantId && person.slug === slug);
+  const seed = peopleSeeds.find(
+    (person) =>
+      person.tenantId === tenantId &&
+      person.slug === slug &&
+      matchesPublicationState(person, {includeDrafts})
+  );
   if (!seed) {
     return undefined;
   }

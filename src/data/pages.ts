@@ -2,6 +2,7 @@ import type {Page} from '@types/cms';
 import {listPeopleByTenant} from '@data/people';
 import {listSponsorsByTenant} from '@data/sponsors';
 import {tenants} from '@data/tenants';
+import {matchesPublicationState} from './utils/publication';
 import type {
   ContactBlock,
   DisciplinesGridBlock,
@@ -672,30 +673,38 @@ export const pages: Page[] = [...mainPages, ...classicPages];
 
 export function listPagesByTenant({
   tenantId,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale?: 'vi' | 'en';
+  includeDrafts?: boolean;
 }) {
   return pages.filter(
-    (page) => page.tenantId === tenantId && (!locale || page.locale === locale)
+    (page) =>
+      page.tenantId === tenantId &&
+      (!locale || page.locale === locale) &&
+      matchesPublicationState(page, {includeDrafts})
   );
 }
 
 export function findPageBySlug({
   tenantId,
   slug,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   slug: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }) {
   return pages.find(
     (page) =>
       page.tenantId === tenantId &&
       page.locale === locale &&
-      (page.slug === slug || (page.slug === '' && slug === ''))
+      (page.slug === slug || (page.slug === '' && slug === '')) &&
+      matchesPublicationState(page, {includeDrafts})
   );
 }
 

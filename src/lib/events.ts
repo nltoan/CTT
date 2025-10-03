@@ -9,7 +9,8 @@ export async function getEvents({
   limit,
   status,
   category,
-  q
+  q,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -19,8 +20,19 @@ export async function getEvents({
   status?: 'upcoming' | 'past' | 'all';
   category?: string;
   q?: string;
+  preview?: boolean;
 }) {
-  return listEventsByTenant({tenantId, locale, from, to, limit, status, category, q});
+  return listEventsByTenant({
+    tenantId,
+    locale,
+    from,
+    to,
+    limit,
+    status,
+    category,
+    q,
+    includeDrafts: preview
+  });
 }
 
 export async function getEventListing({
@@ -32,7 +44,8 @@ export async function getEventListing({
   category,
   q,
   from,
-  to
+  to,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -43,30 +56,46 @@ export async function getEventListing({
   q?: string;
   from?: Date;
   to?: Date;
+  preview?: boolean;
 }) {
-  return searchEventsByTenant({tenantId, locale, page, limit, status, category, q, from, to});
+  return searchEventsByTenant({
+    tenantId,
+    locale,
+    page,
+    limit,
+    status,
+    category,
+    q,
+    from,
+    to,
+    includeDrafts: preview
+  });
 }
 
 export async function getEvent({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findEventBySlug({tenantId, locale, slug});
+  return findEventBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getEventFilters({
   tenantId,
-  locale
+  locale,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  preview?: boolean;
 }) {
-  const categories = listEventCategories({tenantId, locale});
+  const categories = listEventCategories({tenantId, locale, includeDrafts: preview});
   return {categories};
 }
 

@@ -9,6 +9,7 @@ import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootPageStaticParams} from '@lib/static-paths';
+import {readDraftModeState} from '@lib/preview';
 
 export const revalidate = DEFAULT_REVALIDATE_SECONDS;
 
@@ -25,7 +26,8 @@ export async function generateMetadata({
     params,
     locale: params.locale
   });
-  const page = await getPageForTenant({tenantId: tenant.id, slug, locale});
+  const preview = readDraftModeState();
+  const page = await getPageForTenant({tenantId: tenant.id, slug, locale, preview});
 
   if (!page) {
     return {};
@@ -45,7 +47,8 @@ export default async function Page({
     params,
     locale: params.locale
   });
-  const page = await getPageForTenant({tenantId: tenant.id, slug, locale});
+  const preview = readDraftModeState();
+  const page = await getPageForTenant({tenantId: tenant.id, slug, locale, preview});
 
   if (!page) {
     notFound();
@@ -77,7 +80,8 @@ export default async function Page({
             limit: query?.limit,
             category: query?.category,
             tag: query?.tag,
-            q: query?.q
+            q: query?.q,
+            preview
           })
         }
         getEvents={(options) =>
@@ -89,7 +93,8 @@ export default async function Page({
             limit: options?.limit,
             status: options?.status,
             category: options?.category,
-            q: options?.q
+            q: options?.q,
+            preview
           })
         }
         getGallery={(options) =>
@@ -98,7 +103,8 @@ export default async function Page({
             locale,
             slug: options.slug,
             limit: options.limit,
-            sort: options.sort
+            sort: options.sort,
+            preview
           })
         }
         tenantPath={tenantPath}

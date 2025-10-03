@@ -76,13 +76,15 @@ export async function searchAllContent({
   locale,
   query,
   limit,
-  types
+  types,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   query?: string;
   limit?: number | null;
   types?: SearchType[];
+  preview?: boolean;
 }): Promise<SearchResponse> {
   const sanitizedQuery = query?.trim() ?? '';
   const normalizedTypes = normalizeTypes(types);
@@ -104,12 +106,26 @@ export async function searchAllContent({
     await Promise.all([
       normalizedTypes.has('posts')
         ? Promise.resolve(
-            searchPostsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
+            searchPostsByTenant({
+              tenantId,
+              locale,
+              q: sanitizedQuery,
+              limit: limitPerType,
+              page: 1,
+              includeDrafts: preview
+            })
           )
         : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
       normalizedTypes.has('events')
         ? Promise.resolve(
-            searchEventsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
+            searchEventsByTenant({
+              tenantId,
+              locale,
+              q: sanitizedQuery,
+              limit: limitPerType,
+              page: 1,
+              includeDrafts: preview
+            })
           )
         : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
       normalizedTypes.has('galleries')
@@ -120,7 +136,8 @@ export async function searchAllContent({
                 locale,
                 q: sanitizedQuery,
                 page: 1,
-                limit: limitPerType
+                limit: limitPerType,
+                includeDrafts: preview
               })
             )
           )
@@ -132,7 +149,8 @@ export async function searchAllContent({
               locale,
               q: sanitizedQuery,
               page: 1,
-              limit: limitPerType
+              limit: limitPerType,
+              includeDrafts: preview
             }) as SearchBucket<Person>
           )
         : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
@@ -143,7 +161,8 @@ export async function searchAllContent({
               locale,
               q: sanitizedQuery,
               page: 1,
-              limit: limitPerType
+              limit: limitPerType,
+              includeDrafts: preview
             }) as SearchBucket<Discipline>
           )
         : Promise.resolve(cloneBucket(EMPTY_BUCKET))

@@ -7,6 +7,7 @@ import {createCollectionMetadata, buildNewsListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootPostTagStaticParams} from '@lib/static-paths';
+import {readDraftModeState} from '@lib/preview';
 
 import {pickParam, type SearchParams} from '../../utils';
 
@@ -25,10 +26,12 @@ export async function generateMetadata({
   });
 
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+  const preview = readDraftModeState();
   const tagFacet = await getPostTagBySlug({
     tenantId: tenant.id,
     locale,
-    slug: params.tag
+    slug: params.tag,
+    preview
   });
 
   if (!tagFacet) {
@@ -89,12 +92,14 @@ export default async function NewsTagPage({
     params,
     locale: params.locale
   });
+  const preview = readDraftModeState();
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
   const tagFacet = await getPostTagBySlug({
     tenantId: tenant.id,
     locale,
-    slug: params.tag
+    slug: params.tag,
+    preview
   });
 
   if (!tagFacet) {
@@ -117,9 +122,10 @@ export default async function NewsTagPage({
       limit,
       category,
       tag: tagFacet.label,
-      q
+      q,
+      preview
     }),
-    getPostFilters({tenantId: tenant.id, locale})
+    getPostFilters({tenantId: tenant.id, locale, preview})
   ]);
 
   const posts = listing.items;

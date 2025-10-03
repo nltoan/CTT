@@ -1,4 +1,5 @@
 import type {Gallery} from '@types/cms';
+import {matchesPublicationState} from './utils/publication';
 
 type Locale = 'vi' | 'en';
 
@@ -165,6 +166,7 @@ type GallerySearchOptions = {
   tag?: string;
   q?: string;
   sort?: 'latest' | 'oldest';
+  includeDrafts?: boolean;
 };
 
 type GalleryPaginationOptions = GallerySearchOptions & {
@@ -654,10 +656,13 @@ function sortGalleries(
   return sorted;
 }
 
-function filterGalleries({tenantId, locale, category, tag, q}: GallerySearchOptions) {
+function filterGalleries({tenantId, locale, category, tag, q, includeDrafts}: GallerySearchOptions) {
   const normalizedQuery = q?.trim().toLowerCase();
   return galleries.filter((gallery) => {
     if (gallery.tenantId !== tenantId || gallery.locale !== locale) {
+      return false;
+    }
+    if (!matchesPublicationState(gallery, {includeDrafts})) {
       return false;
     }
     if (category && gallery.category !== category) {
@@ -709,13 +714,21 @@ export function searchGalleriesByTenant(options: GalleryPaginationOptions) {
 export function findGalleryBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts
 }: {
   tenantId: string;
   locale: Locale;
   slug: string;
+  includeDrafts?: boolean;
 }) {
-  return galleries.find((gallery) => gallery.tenantId === tenantId && gallery.locale === locale && gallery.slug === slug);
+  return galleries.find(
+    (gallery) =>
+      gallery.tenantId === tenantId &&
+      gallery.locale === locale &&
+      gallery.slug === slug &&
+      matchesPublicationState(gallery, {includeDrafts})
+  );
 }
 
 export function findGalleryTranslations({
@@ -737,15 +750,20 @@ export function findGalleryTranslations({
 
 export function listGalleryCategories({
   tenantId,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: Locale;
+  includeDrafts?: boolean;
 }): GalleryCategoryFacet[] {
   const counts = new Map<string, number>();
 
   for (const gallery of galleries) {
     if (gallery.tenantId !== tenantId || gallery.locale !== locale) {
+      continue;
+    }
+    if (!matchesPublicationState(gallery, {includeDrafts})) {
       continue;
     }
     if (!gallery.category) {
@@ -762,15 +780,20 @@ export function listGalleryCategories({
 
 export function listGalleryTags({
   tenantId,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: Locale;
+  includeDrafts?: boolean;
 }): GalleryTagFacet[] {
   const counts = new Map<string, number>();
 
   for (const gallery of galleries) {
     if (gallery.tenantId !== tenantId || gallery.locale !== locale) {
+      continue;
+    }
+    if (!matchesPublicationState(gallery, {includeDrafts})) {
       continue;
     }
     if (!Array.isArray(gallery.tags)) {
@@ -790,23 +813,33 @@ export function listGalleryTags({
 export function findGalleryCategoryBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: Locale;
   slug: string;
+  includeDrafts?: boolean;
 }) {
-  return listGalleryCategories({tenantId, locale}).find((category) => category.slug === slug) ?? null;
+  return (
+    listGalleryCategories({tenantId, locale, includeDrafts}).find(
+      (category) => category.slug === slug
+    ) ?? null
+  );
 }
 
 export function findGalleryTagBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: Locale;
   slug: string;
+  includeDrafts?: boolean;
 }) {
-  return listGalleryTags({tenantId, locale}).find((tag) => tag.slug === slug) ?? null;
+  return (
+    listGalleryTags({tenantId, locale, includeDrafts}).find((tag) => tag.slug === slug) ?? null
+  );
 }

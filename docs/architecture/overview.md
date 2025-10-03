@@ -266,6 +266,8 @@ Payload webhook (mỗi collection) gọi `POST https://frontend.vercel.app/api/r
 Payload nên gửi kèm `secret` (khớp `REVALIDATE_SECRET`) và có thể mở rộng `paths` nếu muốn revalidate tùy chỉnh.
 `app/api/revalidate/route.ts` kiểm tra secret, chuẩn hóa `slug` theo từng tenant/locale, rồi gọi `revalidatePath` cho các đường dẫn liên quan (ví dụ `/vi`, `/en`, `/vi/news`, `/en/news/[slug]`, các trang cần re-render khi navigation/settings thay đổi).
 
+Preview mode: Payload CMS có thể tạo nút “Xem thử” gọi `GET /api/preview?secret=<PREVIEW_SECRET>&locale=vi&tenant=main&slug=news/slug` để bật draft mode và chuyển hướng trực tiếp đến trang đang biên tập. Endpoint `GET /api/preview/exit` (nhận `redirect` optional) sẽ disable draft mode và trở lại phiên bản public.
+
 ## i18n & SEO
 
 - Lưu `translations` cho mỗi field text trong CMS (`vi`, `en`).

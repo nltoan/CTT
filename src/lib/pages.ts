@@ -15,13 +15,15 @@ import type {Page} from '@types/cms';
 export async function getPageForTenant({
   tenantId,
   slug,
-  locale
+  locale,
+  preview
 }: {
   tenantId: string;
   slug: string;
   locale: 'vi' | 'en';
+  preview?: boolean;
 }) {
-  return findPageBySlug({tenantId, slug, locale});
+  return findPageBySlug({tenantId, slug, locale, includeDrafts: preview});
 }
 
 export async function getNavigation({
@@ -42,7 +44,8 @@ export async function getRecentPosts({
   limit,
   category,
   tag,
-  q
+  q,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -50,8 +53,17 @@ export async function getRecentPosts({
   category?: string;
   tag?: string;
   q?: string;
+  preview?: boolean;
 }) {
-  return listPostsByTenant({tenantId, locale, limit, category, tag, q});
+  return listPostsByTenant({
+    tenantId,
+    locale,
+    limit,
+    category,
+    tag,
+    q,
+    includeDrafts: preview
+  });
 }
 
 export async function getPostListing({
@@ -61,7 +73,8 @@ export async function getPostListing({
   limit,
   category,
   tag,
-  q
+  q,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -70,20 +83,32 @@ export async function getPostListing({
   category?: string;
   tag?: string;
   q?: string;
+  preview?: boolean;
 }) {
-  return searchPostsByTenant({tenantId, locale, page, limit, category, tag, q});
+  return searchPostsByTenant({
+    tenantId,
+    locale,
+    page,
+    limit,
+    category,
+    tag,
+    q,
+    includeDrafts: preview
+  });
 }
 
 export async function getPost({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findPostBySlug({tenantId, locale, slug});
+  return findPostBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getRelatedPosts({
@@ -92,7 +117,8 @@ export async function getRelatedPosts({
   postId,
   category,
   tags,
-  limit
+  limit,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -100,8 +126,17 @@ export async function getRelatedPosts({
   category?: string;
   tags?: string[];
   limit?: number;
+  preview?: boolean;
 }) {
-  return findRelatedPosts({tenantId, locale, postId, category, tags, limit});
+  return findRelatedPosts({
+    tenantId,
+    locale,
+    postId,
+    category,
+    tags,
+    limit,
+    includeDrafts: preview
+  });
 }
 
 export type PageWithNavigation = Page & {
@@ -111,14 +146,16 @@ export type PageWithNavigation = Page & {
 
 export async function getPostFilters({
   tenantId,
-  locale
+  locale,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  preview?: boolean;
 }) {
   const [categories, tags] = await Promise.all([
-    listPostCategories({tenantId, locale}),
-    listPostTags({tenantId, locale})
+    listPostCategories({tenantId, locale, includeDrafts: preview}),
+    listPostTags({tenantId, locale, includeDrafts: preview})
   ]);
 
   return {categories, tags};
@@ -127,23 +164,27 @@ export async function getPostFilters({
 export async function getPostCategoryBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findPostCategoryBySlug({tenantId, locale, slug});
+  return findPostCategoryBySlug({tenantId, locale, slug, includeDrafts: preview});
 }
 
 export async function getPostTagBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  preview
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  preview?: boolean;
 }) {
-  return findPostTagBySlug({tenantId, locale, slug});
+  return findPostTagBySlug({tenantId, locale, slug, includeDrafts: preview});
 }

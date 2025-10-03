@@ -1,5 +1,6 @@
 import type {Block} from '@types/blocks';
 import type {Event} from '@types/cms';
+import {matchesPublicationState} from './utils/publication';
 
 type EventSeedInput = {
   tenantId: string;
@@ -304,7 +305,8 @@ export function listEventsByTenant({
   limit,
   status,
   category,
-  q
+  q,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -314,9 +316,11 @@ export function listEventsByTenant({
   status?: 'upcoming' | 'past' | 'all';
   category?: string;
   q?: string;
+  includeDrafts?: boolean;
 }) {
   const filtered = events
     .filter((event) => event.tenantId === tenantId && event.locale === locale)
+    .filter((event) => matchesPublicationState(event, {includeDrafts}))
     .filter((event) => {
       const startsAt = new Date(event.startsAt);
       if (from && startsAt < from) {
@@ -348,7 +352,8 @@ export function searchEventsByTenant({
   category,
   q,
   from,
-  to
+  to,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -359,6 +364,7 @@ export function searchEventsByTenant({
   q?: string;
   from?: Date;
   to?: Date;
+  includeDrafts?: boolean;
 }) {
   const normalizedPage = Math.max(1, page);
   const normalizedLimit = Math.max(1, limit);
@@ -369,7 +375,8 @@ export function searchEventsByTenant({
     to,
     status,
     category,
-    q
+    q,
+    includeDrafts
   });
   const total = results.length;
   const totalPages = Math.max(1, Math.ceil(total / normalizedLimit));
@@ -389,13 +396,21 @@ export function searchEventsByTenant({
 export function findEventBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  includeDrafts?: boolean;
 }) {
-  return events.find((event) => event.tenantId === tenantId && event.locale === locale && event.slug === slug);
+  return events.find(
+    (event) =>
+      event.tenantId === tenantId &&
+      event.locale === locale &&
+      event.slug === slug &&
+      matchesPublicationState(event, {includeDrafts})
+  );
 }
 
 export function findEventTranslations({
@@ -416,14 +431,21 @@ export function findEventTranslations({
 
 export function listEventCategories({
   tenantId,
-  locale
+  locale,
+  includeDrafts = false
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }) {
   const categories = new Set<string>();
   events.forEach((event) => {
-    if (event.tenantId === tenantId && event.locale === locale && event.category) {
+    if (
+      event.tenantId === tenantId &&
+      event.locale === locale &&
+      event.category &&
+      matchesPublicationState(event, {includeDrafts})
+    ) {
       categories.add(event.category);
     }
   });

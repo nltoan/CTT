@@ -12,6 +12,7 @@ import {createCollectionMetadata, buildNewsListJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootPostCategoryStaticParams} from '@lib/static-paths';
+import {readDraftModeState} from '@lib/preview';
 
 import {pickParam, type SearchParams} from '../../utils';
 
@@ -30,10 +31,12 @@ export async function generateMetadata({
   });
 
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
+  const preview = readDraftModeState();
   const categoryFacet = await getPostCategoryBySlug({
     tenantId: tenant.id,
     locale,
-    slug: params.category
+    slug: params.category,
+    preview
   });
 
   if (!categoryFacet) {
@@ -94,12 +97,14 @@ export default async function NewsCategoryPage({
     params,
     locale: params.locale
   });
+  const preview = readDraftModeState();
   const settings = getSettingsForTenant({tenantId: tenant.id, locale});
 
   const categoryFacet = await getPostCategoryBySlug({
     tenantId: tenant.id,
     locale,
-    slug: params.category
+    slug: params.category,
+    preview
   });
 
   if (!categoryFacet) {
@@ -122,9 +127,10 @@ export default async function NewsCategoryPage({
       limit,
       category: categoryFacet.label,
       tag,
-      q
+      q,
+      preview
     }),
-    getPostFilters({tenantId: tenant.id, locale})
+    getPostFilters({tenantId: tenant.id, locale, preview})
   ]);
 
   const posts = listing.items;

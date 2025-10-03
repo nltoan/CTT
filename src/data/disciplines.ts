@@ -26,6 +26,8 @@ type DisciplineSeed = {
   jury?: string[];
   relatedPeople?: string[];
   updatedAt?: string;
+  status?: 'draft' | 'published' | 'scheduled';
+  publishedAt?: string;
   locales: Record<'vi' | 'en', DisciplineLocaleContent>;
 };
 
@@ -52,7 +54,9 @@ function createDiscipline(seed: DisciplineSeed, locale: 'vi' | 'en'): Discipline
     jury: seed.jury,
     relatedPeople: seed.relatedPeople,
     blocks: translation.blocks,
-    updatedAt: seed.updatedAt ?? DEFAULT_UPDATED_AT
+    updatedAt: seed.updatedAt ?? DEFAULT_UPDATED_AT,
+    status: seed.status,
+    publishedAt: seed.publishedAt
   } satisfies Discipline;
 }
 
@@ -612,17 +616,20 @@ function filterDisciplines({
   locale,
   category,
   level,
-  q
+  q,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   category?: string;
   level?: string;
   q?: string;
+  includeDrafts?: boolean;
 }) {
   const normalizedQuery = q?.trim().toLowerCase();
   return disciplines
     .filter((discipline) => discipline.tenantId === tenantId && discipline.locale === locale)
+    .filter((discipline) => matchesPublicationState(discipline, {includeDrafts}))
     .filter((discipline) => {
       if (!category) return true;
       return discipline.category?.toLowerCase() === category.toLowerCase();
@@ -653,13 +660,15 @@ function filterDisciplines({
 export function listDisciplinesByTenant({
   tenantId,
   locale,
-  limit
+  limit,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   limit?: number;
+  includeDrafts?: boolean;
 }) {
-  const filtered = filterDisciplines({tenantId, locale});
+  const filtered = filterDisciplines({tenantId, locale, includeDrafts});
   if (!limit) {
     return filtered;
   }
@@ -673,7 +682,8 @@ export function searchDisciplinesByTenant({
   limit = 9,
   category,
   level,
-  q
+  q,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
@@ -682,10 +692,11 @@ export function searchDisciplinesByTenant({
   category?: string;
   level?: string;
   q?: string;
+  includeDrafts?: boolean;
 }) {
   const safePage = Math.max(1, page);
   const safeLimit = Math.max(1, Math.min(limit, 24));
-  const filtered = filterDisciplines({tenantId, locale, category, level, q});
+  const filtered = filterDisciplines({tenantId, locale, category, level, q, includeDrafts});
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / safeLimit));
   const normalizedPage = Math.min(safePage, totalPages);
@@ -705,15 +716,20 @@ export function searchDisciplinesByTenant({
 export function findDisciplineBySlug({
   tenantId,
   locale,
-  slug
+  slug,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   slug: string;
+  includeDrafts?: boolean;
 }) {
   return disciplines.find(
     (discipline) =>
-      discipline.tenantId === tenantId && discipline.locale === locale && discipline.slug === slug
+      discipline.tenantId === tenantId &&
+      discipline.locale === locale &&
+      discipline.slug === slug &&
+      matchesPublicationState(discipline, {includeDrafts})
   );
 }
 
@@ -735,13 +751,15 @@ export function findDisciplineTranslations({
 
 export function listDisciplineCategories({
   tenantId,
-  locale
+  locale,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }) {
   const categories = new Map<string, {label: string; slug: string; count: number}>();
-  filterDisciplines({tenantId, locale}).forEach((discipline) => {
+  filterDisciplines({tenantId, locale, includeDrafts}).forEach((discipline) => {
     const category = discipline.category;
     if (!category) {
       return;
@@ -759,13 +777,15 @@ export function listDisciplineCategories({
 
 export function listDisciplineLevels({
   tenantId,
-  locale
+  locale,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
+  includeDrafts?: boolean;
 }) {
   const levels = new Map<string, {label: string; slug: string; count: number}>();
-  filterDisciplines({tenantId, locale}).forEach((discipline) => {
+  filterDisciplines({tenantId, locale, includeDrafts}).forEach((discipline) => {
     const level = discipline.level;
     if (!level) return;
     const slug = level.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -783,14 +803,16 @@ export function getDisciplineSuggestions({
   tenantId,
   locale,
   excludeSlug,
-  limit = 3
+  limit = 3,
+  includeDrafts
 }: {
   tenantId: string;
   locale: 'vi' | 'en';
   excludeSlug: string;
   limit?: number;
+  includeDrafts?: boolean;
 }) {
-  return filterDisciplines({tenantId, locale})
+  return filterDisciplines({tenantId, locale, includeDrafts})
     .filter((discipline) => discipline.slug !== excludeSlug)
     .slice(0, limit);
 }
