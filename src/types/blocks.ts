@@ -64,11 +64,14 @@ export type DisciplinesGridBlock = BlockBase & {
   type: 'disciplines-grid';
   title?: string;
   description?: string;
+  linkLabel?: string;
   items: {
     title: string;
     description?: string;
     image: MediaRef;
     href?: string;
+    disciplineSlug?: string;
+    linkLabel?: string;
   }[];
 };
 

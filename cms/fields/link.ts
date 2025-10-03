@@ -34,6 +34,7 @@ export const linkFields = ({
         { label: 'Bài viết', value: 'post' },
         { label: 'Sự kiện', value: 'event' },
         { label: 'Gallery', value: 'gallery' },
+        { label: 'Bộ môn', value: 'discipline' },
       ],
     },
     {
@@ -48,10 +49,10 @@ export const linkFields = ({
       name: 'reference',
       label: 'Nội dung nội bộ',
       type: 'relationship',
-      relationTo: ['pages', 'posts', 'events', 'galleries'],
+      relationTo: ['pages', 'posts', 'events', 'galleries', 'disciplines'],
       admin: {
         condition: (_data, siblingData) =>
-          ['page', 'post', 'event', 'gallery'].includes(siblingData?.type),
+          ['page', 'post', 'event', 'gallery', 'discipline'].includes(siblingData?.type),
       },
     },
     {

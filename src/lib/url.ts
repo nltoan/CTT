@@ -3,6 +3,7 @@ export function buildQueryString(base: {
   category?: string | null;
   tag?: string | null;
   q?: string | null;
+  level?: string | null;
 }) {
   const params = new URLSearchParams();
   if (base.category) {
@@ -10,6 +11,9 @@ export function buildQueryString(base: {
   }
   if (base.tag) {
     params.set('tag', base.tag);
+  }
+  if (base.level) {
+    params.set('level', base.level);
   }
   if (base.q) {
     params.set('q', base.q);

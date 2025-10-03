@@ -7,7 +7,7 @@ import {searchAllContent, type SearchBucket} from '@lib/search';
 import {createCollectionMetadata, buildSearchResultsJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant} from '@lib/settings';
-import type {Post, Event, Gallery, Person} from '@types/cms';
+import type {Post, Event, Gallery, Person, Discipline} from '@types/cms';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +50,7 @@ function viewAllHref({
   tenantPath,
   query
 }: {
-  type: 'posts' | 'events' | 'people' | 'galleries';
+  type: 'posts' | 'events' | 'people' | 'galleries' | 'disciplines';
   locale: 'vi' | 'en';
   tenantPath: string;
   query: string;
@@ -62,6 +62,8 @@ function viewAllHref({
       return `${base}/news?q=${encodedQuery}`;
     case 'events':
       return `${base}/events?q=${encodedQuery}`;
+    case 'disciplines':
+      return `${base}/disciplines?q=${encodedQuery}`;
     case 'galleries':
       return `${base}/galleries?q=${encodedQuery}`;
     case 'people':
@@ -134,6 +136,7 @@ export default async function SearchPage({
 
   const postsBucket = results?.posts ?? createEmptyBucket<Post>();
   const eventsBucket = results?.events ?? createEmptyBucket<Event>();
+  const disciplinesBucket = results?.disciplines ?? createEmptyBucket<Discipline>();
   const galleriesBucket = results?.galleries ?? createEmptyBucket<Gallery>();
   const peopleBucket = results?.people ?? createEmptyBucket<Person>();
   const totalResults = results?.totalResults ?? 0;
@@ -153,6 +156,7 @@ export default async function SearchPage({
   const sectionTitle = {
     posts: locale === 'vi' ? 'Tin tức & bài viết' : 'News & articles',
     events: locale === 'vi' ? 'Sự kiện' : 'Events',
+    disciplines: locale === 'vi' ? 'Bộ môn & hạng mục' : 'Disciplines & categories',
     galleries: locale === 'vi' ? 'Bộ sưu tập' : 'Galleries',
     people: locale === 'vi' ? 'Giám khảo & cố vấn' : 'Jury & mentors'
   } as const;
@@ -257,6 +261,7 @@ export default async function SearchPage({
                 {[
                   {href: `/${locale}${tenantPath}/news`, label: locale === 'vi' ? 'Tin tức' : 'News'},
                   {href: `/${locale}${tenantPath}/events`, label: locale === 'vi' ? 'Sự kiện' : 'Events'},
+                  {href: `/${locale}${tenantPath}/disciplines`, label: locale === 'vi' ? 'Bộ môn' : 'Disciplines'},
                   {href: `/${locale}${tenantPath}/people`, label: locale === 'vi' ? 'Giám khảo' : 'Jury'},
                   {href: `/${locale}${tenantPath}/galleries`, label: locale === 'vi' ? 'Thư viện' : 'Galleries'}
                 ].map((item) => (
@@ -362,6 +367,50 @@ export default async function SearchPage({
                             <span>{formatDate(event.startsAt, locale)}</span>
                           )}
                           {event.location && <span>{event.location}</span>}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {disciplinesBucket.total > 0 && (
+                <section className="space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <h2 className="text-2xl font-semibold text-slate-900">{sectionTitle.disciplines}</h2>
+                    {disciplinesBucket.hasMore && (
+                      <Link
+                        href={viewAllHref({type: 'disciplines', locale, tenantPath, query})}
+                        className="text-sm font-medium text-primary transition hover:opacity-80"
+                      >
+                        {locale === 'vi' ? 'Xem tất cả bộ môn' : 'View all disciplines'}
+                      </Link>
+                    )}
+                  </div>
+                  <ul className="grid gap-6 md:grid-cols-2">
+                    {disciplinesBucket.items.map((discipline) => (
+                      <li
+                        key={discipline.id}
+                        className="flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm transition hover:border-primary/60 hover:shadow-md"
+                      >
+                        <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                          {locale === 'vi' ? 'Bộ môn' : 'Discipline'}
+                        </span>
+                        <h3 className="text-xl font-semibold text-slate-900">
+                          <Link
+                            href={`/${locale}${tenantPath}/disciplines/${discipline.slug}`}
+                            className="hover:text-primary"
+                          >
+                            {discipline.name}
+                          </Link>
+                        </h3>
+                        {discipline.shortDescription && (
+                          <p className="text-sm leading-relaxed text-slate-600">{discipline.shortDescription}</p>
+                        )}
+                        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
+                          {discipline.category && <span>{discipline.category}</span>}
+                          {discipline.level && <span>{discipline.level}</span>}
+                          {discipline.ageRange && <span>{discipline.ageRange}</span>}
                         </div>
                       </li>
                     ))}

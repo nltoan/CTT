@@ -19,6 +19,11 @@ const mainNavigations: Navigation[] = ['vi', 'en'].flatMap((locale) => [
         href: '/events'
       },
       {
+        id: `disciplines-${locale}`,
+        label: locale === 'vi' ? 'Bộ môn' : 'Disciplines',
+        href: '/disciplines'
+      },
+      {
         id: `people-${locale}`,
         label: locale === 'vi' ? 'Giám khảo' : 'Jury',
         href: '/people'
@@ -74,6 +79,11 @@ const classicNavigations: Navigation[] = ['vi', 'en'].flatMap((locale) => [
         id: `classic-events-${locale}`,
         label: locale === 'vi' ? 'Lịch sự kiện' : 'Events',
         href: '/events'
+      },
+      {
+        id: `classic-disciplines-${locale}`,
+        label: locale === 'vi' ? 'Chương trình' : 'Disciplines',
+        href: '/disciplines'
       },
       {
         id: `classic-people-${locale}`,

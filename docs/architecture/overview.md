@@ -120,12 +120,14 @@ Cấu hình thực thi nằm tại thư mục [`cms/`](../../cms):
    - `title`, `slug`, `excerpt`, `cover`, `body` (RichText/MDX), `category`, `tags`, `author`, `seo`, `tenant`, `translations`.
 6. **events**
    - `title`, `startDate`, `endDate`, `location`, `timelineFlag`, `content`, `translations`, `tenant`.
-7. **people**
+7. **disciplines**
+   - `name`, `slug`, `category`, `level`, `ageRange`, `requirements`, `repertoire`, `schedule`, `jury`, `relatedPeople`, `blocks`, `translations`, `tenant`.
+8. **people**
    - `name`, `title`, `bio`, `photo`, `translations`, `tenant`, `order`.
-8. **sponsors**
+9. **sponsors**
    - `name`, `logo`, `tier`, `url`, `tenant`, `order`.
-9. **slideshows**, **galleries**, **forms**, **form_submissions**.
-10. **settings** (Global + per tenant override).
+10. **slideshows**, **galleries**, **forms**, **form_submissions**.
+11. **settings** (Global + per tenant override).
     - Fields: `seo` (title/description/image/siteName/organizationName), `revalidateSeconds`, `analytics` (gaId, gtmId, metaPixelId, requiresConsent), `cookieBanner` (message, labels, moreInfoUrl, enabled).
     - Frontend merge global + tenant settings trong `src/lib/settings.ts` rồi inject vào layout, metadata và API cache TTL.
 
@@ -196,6 +198,14 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - Trang chi tiết `/events/[slug]` render metadata chuẩn (`createEventMetadata`), JSON-LD `Event`, breadcrumbs, cùng thông tin ngày giờ, địa điểm, tag và nội dung rich-text/block.
 - Khối nội dung bổ sung (`event.blocks`) dùng lại `PageRenderer` nên có thể cấy timeline, CTA, gallery… trực tiếp từ CMS.
 - Mục “More events” lấy dữ liệu từ helper `getEvents` (lọc sự kiện sắp diễn ra, fallback danh sách toàn bộ) để tăng tỷ lệ chuyển đổi.
+
+### Trang Bộ môn & chi tiết
+
+- Route `/[locale]/disciplines` (và `/[locale]/t/[tenant]/disciplines`) đọc `searchParams` gồm `category`, `level`, `q`, `page` để render danh sách bộ môn với grid responsive và component `Pagination`.
+- API `getDisciplineListing` trả về `{items, total, totalPages, page}` kèm meta filter; helper `getDisciplineFilters` tổng hợp facet danh mục/trình độ để hiển thị dropdown filter.
+- Trang chi tiết `/disciplines/[slug]` sử dụng `createDisciplineMetadata` + JSON-LD `Course`, render overview, repertoire gợi ý, yêu cầu, lịch trình (`schedule`), danh sách giám khảo liên quan và block tùy biến qua `PageRenderer`.
+- `getPeopleBySlugs` lấy dữ liệu giám khảo/cố vấn từ seed `people` nhằm hiển thị profile liên kết; `getRelatedDisciplines` xuất danh sách bộ môn tương tự.
+- Block `disciplines-grid` map trường `disciplineSlug` → đường dẫn nội bộ theo locale/tenant, đồng thời cho phép override CTA label.
 
 ### Trang Thư viện & chi tiết
 

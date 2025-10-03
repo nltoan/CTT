@@ -92,6 +92,36 @@ export type Event = {
   updatedAt?: string;
 };
 
+export type DisciplineScheduleItem = {
+  title: string;
+  description?: string;
+  startsAt?: string;
+  endsAt?: string;
+};
+
+export type Discipline = {
+  id: string;
+  slug: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  shortDescription?: string;
+  description?: string;
+  category?: string;
+  level?: 'beginner' | 'intermediate' | 'advanced' | string;
+  ageRange?: string;
+  tags?: string[];
+  coverImage?: MediaRef;
+  repertoire?: string[];
+  requirements?: string[];
+  schedule?: DisciplineScheduleItem[];
+  jury?: string[];
+  relatedPeople?: string[];
+  blocks?: Block[];
+  updatedAt?: string;
+};
+
 export type PersonSocialProfile = {
   label: string;
   url: string;

@@ -1,8 +1,9 @@
 import {listPagesByTenant} from '@data/pages';
-import {listPostsByTenant} from '@data/posts';
+import {listPostsByTenant, listPostCategories, listPostTags} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
 import {listGalleriesByTenant} from '@data/galleries';
 import {listPeopleByTenant} from '@data/people';
+import {listDisciplinesByTenant} from '@data/disciplines';
 import {tenants} from '@data/tenants';
 import type {Tenant} from '@types/cms';
 import {getDefaultTenant} from '@lib/tenant';
@@ -135,6 +136,28 @@ export function getTenantEventStaticParams() {
         locale,
         tenant: tenant.slug,
         slug: event.slug
+      }))
+    )
+  );
+}
+
+export function getRootDisciplineStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listDisciplinesByTenant({tenantId: tenant.id, locale}).map((discipline) => ({
+      locale,
+      slug: discipline.slug
+    }))
+  );
+}
+
+export function getTenantDisciplineStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listDisciplinesByTenant({tenantId: tenant.id, locale}).map((discipline) => ({
+        tenant: tenant.slug,
+        locale,
+        slug: discipline.slug
       }))
     )
   );

@@ -126,7 +126,14 @@ export async function PageRenderer({
           case 'hero-countdown':
             return <HeroCountdown key={index} block={block} />;
           case 'disciplines-grid':
-            return <DisciplinesGrid key={index} block={block} />;
+            return (
+              <DisciplinesGrid
+                key={index}
+                block={block}
+                locale={locale}
+                tenantPath={tenantPath}
+              />
+            );
           case 'timeline':
             return <Timeline key={index} block={block} locale={locale} />;
           case 'prizes':

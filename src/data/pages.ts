@@ -70,6 +70,7 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
     locale === 'vi'
       ? 'Khám phá các hạng mục biểu diễn dành cho thí sinh.'
       : 'Discover all categories available for contestants.',
+  linkLabel: locale === 'vi' ? 'Tìm hiểu bộ môn' : 'Explore discipline',
   items: [
     {
       title: 'Piano',
@@ -79,7 +80,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'piano',
         url: 'https://images.unsplash.com/photo-1513883049090-d0b7439799bf',
         alt: 'Piano keys'
-      }
+      },
+      disciplineSlug: 'piano'
     },
     {
       title: locale === 'vi' ? 'Nhạc cụ dây' : 'Strings',
@@ -89,7 +91,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'strings',
         url: 'https://images.unsplash.com/photo-1513883560-9c31a7c9e8e8',
         alt: 'String instruments'
-      }
+      },
+      disciplineSlug: locale === 'vi' ? 'day-nhac' : 'strings'
     },
     {
       title: locale === 'vi' ? 'Thanh nhạc' : 'Vocal',
@@ -101,7 +104,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'vocal',
         url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d',
         alt: 'Singer on stage'
-      }
+      },
+      disciplineSlug: locale === 'vi' ? 'thanh-nhac' : 'vocal'
     },
     {
       title: 'Guitar',
@@ -111,7 +115,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'guitar',
         url: 'https://images.unsplash.com/photo-1511367461989-f85a21fda167',
         alt: 'Guitar player'
-      }
+      },
+      disciplineSlug: 'guitar'
     },
     {
       title: 'Ukulele',
@@ -121,7 +126,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'ukulele',
         url: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76',
         alt: 'Ukulele'
-      }
+      },
+      disciplineSlug: 'ukulele'
     },
     {
       title: locale === 'vi' ? 'Dàn nhạc' : 'Orchestra',
@@ -131,7 +137,8 @@ const createDisciplinesBlock = (locale: 'vi' | 'en'): DisciplinesGridBlock => ({
         id: 'orchestra',
         url: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4',
         alt: 'Orchestra on stage'
-      }
+      },
+      disciplineSlug: locale === 'vi' ? 'dan-nhac' : 'orchestra'
     }
   ],
   style: {

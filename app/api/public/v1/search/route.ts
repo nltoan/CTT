@@ -15,7 +15,7 @@ function parseTypes(values: string[]): SearchType[] | undefined {
     return undefined;
   }
 
-  const allowed: SearchType[] = ['posts', 'events', 'galleries', 'people'];
+  const allowed: SearchType[] = ['posts', 'events', 'galleries', 'people', 'disciplines'];
   const set = new Set<SearchType>();
 
   values.forEach((value) => {
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
       meta: {
         tenant: tenant.slug,
         locale,
-        types: requestedTypes ?? ['posts', 'events', 'galleries', 'people']
+        types: requestedTypes ?? ['posts', 'events', 'galleries', 'people', 'disciplines']
       }
     },
     ttl,

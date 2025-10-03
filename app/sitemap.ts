@@ -6,6 +6,7 @@ import {listPostsByTenant, listPostCategories, listPostTags} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
 import {listGalleriesByTenant} from '@data/galleries';
 import {listPeopleByTenant} from '@data/people';
+import {listDisciplinesByTenant} from '@data/disciplines';
 import {buildAbsoluteUrl, buildPath} from '@lib/seo';
 import {ensureSlug} from '@/utils/slug';
 
@@ -108,6 +109,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: events[0]?.startsAt ? new Date(events[0].startsAt) : undefined,
         changeFrequency: 'weekly',
         priority: 0.75
+      });
+
+      const disciplines = listDisciplinesByTenant({tenantId: tenant.id, locale});
+      disciplines.forEach((discipline) => {
+        const disciplinePath = buildPath({
+          locale,
+          tenantPath,
+          slugSegments: ['disciplines', discipline.slug]
+        });
+        entries.push({
+          url: buildAbsoluteUrl(disciplinePath),
+          lastModified: toDate(discipline.updatedAt),
+          changeFrequency: 'weekly',
+          priority: 0.65
+        });
+      });
+      const disciplinesPath = buildPath({locale, tenantPath, slugSegments: ['disciplines']});
+      entries.push({
+        url: buildAbsoluteUrl(disciplinesPath),
+        lastModified: toDate(disciplines[0]?.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.7
       });
 
       const galleries = listGalleriesByTenant({tenantId: tenant.id, locale});

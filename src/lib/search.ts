@@ -2,9 +2,10 @@ import {searchPostsByTenant} from '@data/posts';
 import {searchEventsByTenant} from '@data/events';
 import {searchGalleriesByTenant} from '@data/galleries';
 import {searchPeopleByTenant} from '@data/people';
-import type {Post, Event, Gallery, Person} from '@types/cms';
+import {searchDisciplinesByTenant} from '@data/disciplines';
+import type {Post, Event, Gallery, Person, Discipline} from '@types/cms';
 
-type SearchType = 'posts' | 'events' | 'galleries' | 'people';
+type SearchType = 'posts' | 'events' | 'galleries' | 'people' | 'disciplines';
 
 type SearchBucket<T> = {
   items: T[];
@@ -22,6 +23,7 @@ type SearchResponse = {
   events: SearchBucket<Event>;
   galleries: SearchBucket<Gallery>;
   people: SearchBucket<Person>;
+  disciplines: SearchBucket<Discipline>;
 };
 
 const EMPTY_BUCKET: SearchBucket<never> = {
@@ -46,7 +48,7 @@ function cloneBucket<T>(bucket: SearchBucket<T>): SearchBucket<T> {
 
 function normalizeTypes(types?: SearchType[]) {
   if (!types || types.length === 0) {
-    return new Set<SearchType>(['posts', 'events', 'galleries', 'people']);
+    return new Set<SearchType>(['posts', 'events', 'galleries', 'people', 'disciplines']);
   }
   return new Set<SearchType>(types);
 }
@@ -93,49 +95,66 @@ export async function searchAllContent({
       posts: cloneBucket(EMPTY_BUCKET),
       events: cloneBucket(EMPTY_BUCKET),
       galleries: cloneBucket(EMPTY_BUCKET),
-      people: cloneBucket(EMPTY_BUCKET)
+      people: cloneBucket(EMPTY_BUCKET),
+      disciplines: cloneBucket(EMPTY_BUCKET)
     } satisfies SearchResponse;
   }
 
-  const [postResults, eventResults, galleryResults, personResults] = await Promise.all([
-    normalizedTypes.has('posts')
-      ? Promise.resolve(
-          searchPostsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
-        )
-      : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
-    normalizedTypes.has('events')
-      ? Promise.resolve(
-          searchEventsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
-        )
-      : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
-    normalizedTypes.has('galleries')
-      ? Promise.resolve(
-          toGalleryBucket(
-            searchGalleriesByTenant({
+  const [postResults, eventResults, galleryResults, personResults, disciplineResults] =
+    await Promise.all([
+      normalizedTypes.has('posts')
+        ? Promise.resolve(
+            searchPostsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
+          )
+        : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
+      normalizedTypes.has('events')
+        ? Promise.resolve(
+            searchEventsByTenant({tenantId, locale, q: sanitizedQuery, limit: limitPerType, page: 1})
+          )
+        : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
+      normalizedTypes.has('galleries')
+        ? Promise.resolve(
+            toGalleryBucket(
+              searchGalleriesByTenant({
+                tenantId,
+                locale,
+                q: sanitizedQuery,
+                page: 1,
+                limit: limitPerType
+              })
+            )
+          )
+        : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
+      normalizedTypes.has('people')
+        ? Promise.resolve(
+            searchPeopleByTenant({
               tenantId,
               locale,
               q: sanitizedQuery,
               page: 1,
               limit: limitPerType
-            })
+            }) as SearchBucket<Person>
           )
-        )
-      : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
-    normalizedTypes.has('people')
-      ? Promise.resolve(
-          searchPeopleByTenant({
-            tenantId,
-            locale,
-            q: sanitizedQuery,
-            page: 1,
-            limit: limitPerType
-          }) as SearchBucket<Person>
-        )
-      : Promise.resolve(cloneBucket(EMPTY_BUCKET))
-  ]);
+        : Promise.resolve(cloneBucket(EMPTY_BUCKET)),
+      normalizedTypes.has('disciplines')
+        ? Promise.resolve(
+            searchDisciplinesByTenant({
+              tenantId,
+              locale,
+              q: sanitizedQuery,
+              page: 1,
+              limit: limitPerType
+            }) as SearchBucket<Discipline>
+          )
+        : Promise.resolve(cloneBucket(EMPTY_BUCKET))
+    ]);
 
   const totalResults =
-    postResults.total + eventResults.total + galleryResults.total + personResults.total;
+    postResults.total +
+    eventResults.total +
+    galleryResults.total +
+    personResults.total +
+    disciplineResults.total;
 
   return {
     query: sanitizedQuery,
@@ -143,7 +162,8 @@ export async function searchAllContent({
     posts: postResults,
     events: eventResults,
     galleries: galleryResults,
-    people: personResults
+    people: personResults,
+    disciplines: disciplineResults
   } satisfies SearchResponse;
 }
 

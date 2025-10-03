@@ -22,6 +22,7 @@ import { TenantUsers } from './collections/TenantUsers';
 import { PostCategories } from './collections/PostCategories';
 import { PostTags } from './collections/PostTags';
 import { EventCategories } from './collections/EventCategories';
+import { Disciplines } from './collections/Disciplines';
 import { Settings } from './globals/Settings';
 
 dotenv.config();
@@ -61,6 +62,7 @@ export default buildConfig({
     PostTags,
     Events,
     EventCategories,
+    Disciplines,
     People,
     Sponsors,
     Slideshows,

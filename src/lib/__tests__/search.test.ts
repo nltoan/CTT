@@ -12,6 +12,7 @@ describe('searchAllContent', () => {
     expect(result.events.total).toBe(0);
     expect(result.people.total).toBe(0);
     expect(result.galleries.total).toBe(0);
+    expect(result.disciplines.total).toBe(0);
   });
 
   it('aggregates multiple content types for a keyword', async () => {
@@ -19,10 +20,17 @@ describe('searchAllContent', () => {
 
     expect(result.query).toBe('piano');
     expect(result.totalResults).toBeGreaterThan(0);
-    expect(result.posts.total + result.events.total + result.people.total + result.galleries.total).toBe(
+    expect(
+      result.posts.total +
+        result.events.total +
+        result.people.total +
+        result.galleries.total +
+        result.disciplines.total
+    ).toBe(
       result.totalResults
     );
     expect(result.people.items.some((person) => person.disciplines?.some((d) => d.toLowerCase().includes('piano')))).toBe(true);
+    expect(result.disciplines.items.some((discipline) => discipline.name.toLowerCase().includes('piano'))).toBe(true);
   });
 
   it('limits search to requested content types', async () => {
@@ -36,6 +44,22 @@ describe('searchAllContent', () => {
     expect(result.people.total).toBeGreaterThan(0);
     expect(result.posts.total).toBe(0);
     expect(result.events.total).toBe(0);
+    expect(result.galleries.total).toBe(0);
+    expect(result.disciplines.total).toBe(0);
+  });
+
+  it('supports searching disciplines only', async () => {
+    const result = await searchAllContent({
+      tenantId: 'tenant-main',
+      locale: 'vi',
+      query: 'guitar',
+      types: ['disciplines']
+    });
+
+    expect(result.disciplines.total).toBeGreaterThan(0);
+    expect(result.posts.total).toBe(0);
+    expect(result.events.total).toBe(0);
+    expect(result.people.total).toBe(0);
     expect(result.galleries.total).toBe(0);
   });
 });

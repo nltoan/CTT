@@ -81,6 +81,12 @@ export const disciplinesGridBlock: Block = {
       localized: true,
     },
     {
+      name: 'linkLabel',
+      label: 'Nhãn liên kết mặc định',
+      type: 'text',
+      localized: true,
+    },
+    {
       name: 'items',
       label: 'Bộ môn',
       type: 'array',
@@ -96,6 +102,12 @@ export const disciplinesGridBlock: Block = {
           name: 'description',
           type: 'textarea',
           localized: true,
+        },
+        {
+          name: 'discipline',
+          label: 'Bộ môn nội bộ',
+          type: 'relationship',
+          relationTo: 'disciplines',
         },
         mediaField('image', 'Ảnh đại diện'),
         linkFields({ name: 'link', label: 'Liên kết chi tiết', localized: true }),

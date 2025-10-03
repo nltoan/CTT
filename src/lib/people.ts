@@ -41,6 +41,23 @@ export async function getRelatedPeople({
   return people.filter((person) => person.id !== excludePersonId).slice(0, limit);
 }
 
+export async function getPeopleBySlugs({
+  tenantId,
+  locale,
+  slugs
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  slugs?: string[];
+}): Promise<Person[]> {
+  if (!slugs || slugs.length === 0) {
+    return [];
+  }
+  const normalized = slugs.map((slug) => slug.toLowerCase());
+  const people = await getPeople({tenantId, locale});
+  return people.filter((person) => normalized.includes(person.slug.toLowerCase()));
+}
+
 export async function getSponsors({
   tenantId,
   locale

@@ -1,6 +1,6 @@
 import type {Metadata} from 'next';
 
-import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor, Gallery} from '@types/cms';
+import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor, Gallery, Discipline} from '@types/cms';
 import type {ResolvedSiteSettings} from '@lib/settings';
 import type {SearchResponse} from './search';
 import {findPageTranslations} from '@data/pages';
@@ -8,6 +8,7 @@ import {findPostTranslations} from '@data/posts';
 import {findEventTranslations} from '@data/events';
 import {findGalleryTranslations} from '@data/galleries';
 import {findPersonTranslations} from '@data/people';
+import {findDisciplineTranslations} from '@data/disciplines';
 
 const DEFAULT_OG_IMAGE = 'https://images.unsplash.com/photo-1485579149621-3123dd979885';
 const LOCALE_TO_BCP47: Record<'vi' | 'en', string> = {
@@ -320,6 +321,67 @@ export function createEventMetadata({
       title: event.title,
       description,
       images: [image]
+    }
+  } satisfies Metadata;
+}
+
+export function createDisciplineMetadata({
+  discipline,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  discipline: Discipline;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}): Metadata {
+  const slugSegments = ['disciplines', discipline.slug];
+  const canonicalPath = buildPath({locale, tenantPath, slugSegments});
+  const canonicalUrl = buildAbsoluteUrl(canonicalPath);
+  const defaults = settings?.seo ?? {};
+  const description =
+    discipline.shortDescription ?? discipline.description ?? defaults.description ?? tenant.description ?? '';
+  const image = resolveImage(discipline.coverImage?.url, tenant, defaults.image);
+  const ogImage = discipline.coverImage?.url ?? image;
+  const translations = findDisciplineTranslations({
+    translationKey: discipline.translationKey,
+    disciplineId: discipline.id
+  });
+  const alternateLanguages = Object.fromEntries(
+    translations.map((translation) => {
+      const path = buildPath({
+        locale: translation.locale,
+        tenantPath,
+        slugSegments: ['disciplines', translation.slug]
+      });
+      return [translation.locale, buildAbsoluteUrl(path)];
+    })
+  );
+
+  return {
+    title: discipline.name,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: alternateLanguages
+    },
+    openGraph: {
+      type: 'website',
+      url: canonicalUrl,
+      title: discipline.name,
+      description,
+      siteName: defaults.siteName ?? tenant.name,
+      locale: mapLocaleToBcp47(locale),
+      images: ogImage ? [ogImage] : undefined
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: discipline.name,
+      description,
+      images: ogImage ? [ogImage] : undefined
     }
   } satisfies Metadata;
 }
@@ -780,6 +842,43 @@ export function buildGalleryListJsonLd({
   };
 }
 
+export function buildDisciplinesListJsonLd({
+  disciplines,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  disciplines: Discipline[];
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  if (!disciplines.length) {
+    return null;
+  }
+
+  const defaults = settings?.seo ?? {};
+  const listName = `${defaults.siteName ?? tenant.name} disciplines`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: listName,
+    numberOfItems: disciplines.length,
+    itemListElement: disciplines.map((discipline, index) => ({
+      '@type': 'Course',
+      position: index + 1,
+      name: discipline.name,
+      description: discipline.shortDescription ?? discipline.description,
+      url: buildAbsoluteUrl(
+        buildPath({locale, tenantPath, slugSegments: ['disciplines', discipline.slug]})
+      )
+    }))
+  };
+}
+
 export function buildSearchResultsJsonLd({
   tenant,
   locale,
@@ -845,6 +944,23 @@ export function buildSearchResultsJsonLd({
               name: event.location
             }
           : undefined
+      }))
+    });
+  }
+
+  if (results.disciplines.total > 0) {
+    itemLists.push({
+      '@type': 'ItemList',
+      name: `${baseName} disciplines`,
+      numberOfItems: results.disciplines.items.length,
+      itemListElement: results.disciplines.items.map((discipline, index) => ({
+        '@type': 'Course',
+        position: index + 1,
+        name: discipline.name,
+        description: discipline.shortDescription ?? discipline.description,
+        url: buildAbsoluteUrl(
+          buildPath({locale, tenantPath, slugSegments: ['disciplines', discipline.slug]})
+        )
       }))
     });
   }
@@ -941,6 +1057,54 @@ export function buildEventJsonLd({
       : undefined,
     image: event.coverImage ? [event.coverImage] : undefined,
     url: buildAbsoluteUrl(path)
+  };
+}
+
+export function buildDisciplineJsonLd({
+  discipline,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  discipline: Discipline;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  const organization = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const path = buildPath({locale, tenantPath, slugSegments: ['disciplines', discipline.slug]});
+  const url = buildAbsoluteUrl(path);
+  const courseInstances = (discipline.schedule ?? [])
+    .filter((item) => item.startsAt)
+    .map((item) => ({
+      '@type': 'CourseInstance',
+      name: item.title,
+      startDate: item.startsAt,
+      endDate: item.endsAt ?? item.startsAt,
+      description: item.description
+    }));
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: discipline.name,
+    description: discipline.shortDescription ?? discipline.description,
+    url,
+    image: discipline.coverImage?.url ? [discipline.coverImage.url] : undefined,
+    provider: organization,
+    educationalLevel: discipline.level,
+    courseMode: discipline.category,
+    keywords: discipline.tags,
+    audience: discipline.ageRange
+      ? {
+          '@type': 'Audience',
+          audienceType: discipline.ageRange
+        }
+      : undefined,
+    coursePrerequisites: discipline.requirements,
+    hasCourseInstance: courseInstances.length ? courseInstances : undefined
   };
 }
 
