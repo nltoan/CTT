@@ -27,6 +27,14 @@ type PersonSeed = {
   locales: Record<'vi' | 'en', PersonLocaleContent>;
 };
 
+function matchesQuery(value: string | undefined, query: string) {
+  return value?.toLowerCase().includes(query) ?? false;
+}
+
+function matchesList(values: string[] | undefined, query: string) {
+  return (values ?? []).some((item) => item.toLowerCase().includes(query));
+}
+
 function createLocalizedPerson(seed: PersonSeed, locale: 'vi' | 'en'): Person {
   const translation = seed.locales[locale] ?? seed.locales.vi;
 
@@ -672,6 +680,63 @@ export function listPeopleByTenant({
   }
 
   return localized;
+}
+
+export function searchPeopleByTenant({
+  tenantId,
+  locale,
+  page = 1,
+  limit = 6,
+  q
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  page?: number;
+  limit?: number;
+  q?: string;
+}) {
+  const normalizedQuery = q?.trim().toLowerCase();
+  const normalizedLimit = Math.max(1, Math.min(Number.isFinite(limit) ? Number(limit) : 6, 50));
+  const normalizedPage = Math.max(1, Number.isFinite(page) ? Number(page) : 1);
+  const people = listPeopleByTenant({tenantId, locale});
+
+  const filtered = normalizedQuery
+    ? people.filter((person) => {
+        if (matchesQuery(person.name, normalizedQuery)) return true;
+        if (matchesQuery(person.title, normalizedQuery)) return true;
+        if (matchesQuery(person.bio, normalizedQuery)) return true;
+        if (matchesQuery(person.quote, normalizedQuery)) return true;
+        if (matchesQuery(person.contactEmail, normalizedQuery)) return true;
+        if (matchesQuery(person.contactPhone, normalizedQuery)) return true;
+        if (matchesList(person.disciplines, normalizedQuery)) return true;
+        if (matchesList(person.achievements, normalizedQuery)) return true;
+        if (
+          (person.highlights ?? []).some(
+            (highlight) =>
+              matchesQuery(highlight.title, normalizedQuery) ||
+              matchesQuery(highlight.description, normalizedQuery)
+          )
+        ) {
+          return true;
+        }
+        return false;
+      })
+    : people;
+
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / normalizedLimit));
+  const currentPage = Math.min(normalizedPage, totalPages);
+  const startIndex = (currentPage - 1) * normalizedLimit;
+  const items = filtered.slice(startIndex, startIndex + normalizedLimit);
+
+  return {
+    items,
+    total,
+    page: currentPage,
+    limit: normalizedLimit,
+    totalPages,
+    hasMore: currentPage < totalPages
+  };
 }
 
 export function findPersonBySlug({

@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 
 import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor, Gallery} from '@types/cms';
 import type {ResolvedSiteSettings} from '@lib/settings';
+import type {SearchResponse} from './search';
 import {findPageTranslations} from '@data/pages';
 import {findPostTranslations} from '@data/posts';
 import {findEventTranslations} from '@data/events';
@@ -776,6 +777,128 @@ export function buildGalleryListJsonLd({
       ),
       dateModified: gallery.updatedAt
     }))
+  };
+}
+
+export function buildSearchResultsJsonLd({
+  tenant,
+  locale,
+  tenantPath,
+  query,
+  results,
+  settings
+}: {
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  query: string;
+  results: SearchResponse;
+  settings?: ResolvedSiteSettings;
+}) {
+  if (!query || results.totalResults === 0) {
+    return null;
+  }
+
+  const defaults = settings?.seo ?? {};
+  const baseName = `${defaults.siteName ?? tenant.name} search`;
+  const baseUrl = buildAbsoluteUrl(
+    buildPath({locale, tenantPath, slugSegments: ['search']})
+  );
+
+  const itemLists: unknown[] = [];
+
+  if (results.posts.total > 0) {
+    itemLists.push({
+      '@type': 'ItemList',
+      name: `${baseName} articles`,
+      numberOfItems: results.posts.items.length,
+      itemListElement: results.posts.items.map((post, index) => ({
+        '@type': 'Article',
+        position: index + 1,
+        name: post.title,
+        url: buildAbsoluteUrl(
+          buildPath({locale, tenantPath, slugSegments: ['news', post.slug]})
+        ),
+        datePublished: post.publishedAt,
+        dateModified: post.updatedAt ?? post.publishedAt
+      }))
+    });
+  }
+
+  if (results.events.total > 0) {
+    itemLists.push({
+      '@type': 'ItemList',
+      name: `${baseName} events`,
+      numberOfItems: results.events.items.length,
+      itemListElement: results.events.items.map((event, index) => ({
+        '@type': 'Event',
+        position: index + 1,
+        name: event.title,
+        url: buildAbsoluteUrl(
+          buildPath({locale, tenantPath, slugSegments: ['events', event.slug]})
+        ),
+        startDate: event.startsAt,
+        endDate: event.endsAt ?? event.startsAt,
+        location: event.location
+          ? {
+              '@type': 'Place',
+              name: event.location
+            }
+          : undefined
+      }))
+    });
+  }
+
+  if (results.people.total > 0) {
+    itemLists.push({
+      '@type': 'ItemList',
+      name: `${baseName} jury`,
+      numberOfItems: results.people.items.length,
+      itemListElement: results.people.items.map((person, index) => ({
+        '@type': 'Person',
+        position: index + 1,
+        name: person.name,
+        jobTitle: person.title,
+        url: buildAbsoluteUrl(
+          buildPath({locale, tenantPath, slugSegments: ['people', person.slug]})
+        ),
+        description: person.bio
+      }))
+    });
+  }
+
+  if (results.galleries.total > 0) {
+    itemLists.push({
+      '@type': 'ItemList',
+      name: `${baseName} galleries`,
+      numberOfItems: results.galleries.items.length,
+      itemListElement: results.galleries.items.map((gallery, index) => ({
+        '@type': 'CollectionPage',
+        position: index + 1,
+        name: gallery.title,
+        url: buildAbsoluteUrl(
+          buildPath({locale, tenantPath, slugSegments: ['galleries', gallery.slug]})
+        )
+      }))
+    });
+  }
+
+  if (!itemLists.length) {
+    return null;
+  }
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SearchResultsPage',
+    name: baseName,
+    inLanguage: mapLocaleToBcp47(locale),
+    about: query,
+    mainEntity: itemLists,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${baseUrl}?q={search_term_string}`,
+      'query-input': 'required name=search_term_string'
+    }
   };
 }
 

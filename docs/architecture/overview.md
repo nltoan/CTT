@@ -193,6 +193,13 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - Trang chi tiết `/galleries/[slug]` render `createGalleryMetadata`, `buildGalleryJsonLd`, breadcrumbs và hiển thị media theo layout `grid` hoặc `masonry` tùy cấu hình, kèm fallback khi gallery trống.
 - Block `image-gallery` chấp nhận thuộc tính `source: {type: 'gallery', slug, limit, sort}` để nạp dữ liệu preview trực tiếp từ collection gallery, đồng thời vẫn hỗ trợ danh sách media inline.
 
+### Trang Tìm kiếm hợp nhất
+
+- Route `/[locale]/search` (và `/[locale]/t/[tenant]/search`) đọc `searchParams.q`, hiển thị form GET, gợi ý từ khóa và tóm tắt tổng số kết quả.
+- Helper `searchAllContent` gom dữ liệu từ `posts`, `events`, `galleries`, `people` (mỗi loại giới hạn tối đa 5 mục) và trả về `totalResults`, `hasMore` để gắn link “Xem tất cả” tới các trang chuyên biệt.
+- JSON-LD `SearchResultsPage` + `ItemList` con được sinh qua `buildSearchResultsJsonLd`, giúp bot hiểu truy vấn người dùng và danh sách kết quả nổi bật.
+- Navigation seed thêm mục `Tìm kiếm` ở header để người dùng truy cập nhanh.
+
 Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
 
 ## API Public Layer
@@ -205,6 +212,7 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /events/:slug`
 - `GET /galleries` (hỗ trợ `page`, `limit`, `category`, `tag`, `q`, `sort`, trả kèm `meta` và filters)
 - `GET /galleries/:slug`
+- `GET /search` (tham số `tenant`, `locale`, `q`, `limit`, `type` → trả về `{query, totalResults, posts, events, galleries, people}` cùng metadata loại nội dung)
 - `GET /people`, `GET /people/:slug` (trả metadata đầy đủ + danh sách cố vấn liên quan), `GET /sponsors`
 - `GET /settings`
 - `GET /navigations`

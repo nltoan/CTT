@@ -113,6 +113,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: 'monthly',
         priority: 0.6
       });
+
+      const searchPath = buildPath({locale, tenantPath, slugSegments: ['search']});
+      entries.push({
+        url: buildAbsoluteUrl(searchPath),
+        changeFrequency: 'daily',
+        priority: 0.4
+      });
     });
   });
 
