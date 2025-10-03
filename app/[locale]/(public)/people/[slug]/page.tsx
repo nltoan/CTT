@@ -239,7 +239,18 @@ export default async function PersonDetail({
             ) : null}
           </section>
 
-          {hasBlocks ? <PageRenderer blocks={person.blocks ?? []} locale={locale} tenantPath={tenantPath} /> : null}
+          {hasBlocks ? (
+            <PageRenderer
+              blocks={person.blocks ?? []}
+              locale={locale}
+              tenantPath={tenantPath}
+              tenantId={tenant.id}
+              getPosts={async () => []}
+              getEvents={async () => []}
+              getGallery={async () => null}
+              getSlideshow={async () => null}
+            />
+          ) : null}
         </div>
       </article>
 

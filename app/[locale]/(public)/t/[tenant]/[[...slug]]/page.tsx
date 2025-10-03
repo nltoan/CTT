@@ -9,6 +9,7 @@ import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getTenantPageStaticParams} from '@lib/static-paths';
+import {getSlideshow as getSlideshowForTenant} from '@lib/slideshows';
 
 export const revalidate = DEFAULT_REVALIDATE_SECONDS;
 
@@ -99,6 +100,14 @@ export default async function TenantPage({
             slug: options.slug,
             limit: options.limit,
             sort: options.sort
+          })
+        }
+        getSlideshow={(options) =>
+          getSlideshowForTenant({
+            tenantId: tenant.id,
+            locale,
+            id: options.id,
+            limit: options.limit
           })
         }
         tenantPath={tenantPath}

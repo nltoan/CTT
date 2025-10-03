@@ -238,6 +238,7 @@ export default async function DisciplineDetail({
                 getPosts={async () => []}
                 getEvents={async () => []}
                 getGallery={async () => null}
+                getSlideshow={async () => null}
               />
             )}
           </div>

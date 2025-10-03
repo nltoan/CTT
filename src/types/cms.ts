@@ -204,6 +204,32 @@ export type Gallery = {
   publishedAt?: string;
 };
 
+export type SlideshowSlide = {
+  id: string;
+  title?: string;
+  caption?: string;
+  image: MediaRef;
+  href?: string;
+};
+
+export type Slideshow = {
+  id: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  description?: string;
+  translationKey?: string;
+  slides: SlideshowSlide[];
+  options?: {
+    autoplay?: boolean;
+    interval?: number;
+    loop?: boolean;
+  };
+  status?: PublicationStatus;
+  publishedAt?: string;
+  updatedAt?: string;
+};
+
 export type AnalyticsSettings = {
   gaId?: string;
   gtmId?: string;

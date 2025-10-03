@@ -388,13 +388,25 @@ const createCtaBlock = (locale: 'vi' | 'en'): CtaButtonsBlock => ({
   }
 });
 
-const createSlideshowBlock = (locale: 'vi' | 'en'): SlideshowBlock => ({
+const createSlideshowBlock = (tenantId: 'tenant-main' | 'tenant-classic', locale: 'vi' | 'en'): SlideshowBlock => ({
   type: 'slideshow',
   title: locale === 'vi' ? 'Không khí lễ hội CTT' : 'The CTT festival atmosphere',
   description:
     locale === 'vi'
       ? 'Cảm nhận năng lượng của các buổi biểu diễn và chương trình giao lưu.'
       : 'Feel the energy from performances and community events.',
+  source: {
+    type: 'slideshow',
+    id:
+      tenantId === 'tenant-main'
+        ? `tenant-main-hero-${locale}`
+        : `tenant-classic-hero-${locale}`,
+    limit: 3
+  },
+  emptyStateMessage:
+    locale === 'vi'
+      ? 'Slideshow sẽ hiển thị ngay khi được cấu hình trong CMS.'
+      : 'Slides will appear here once configured in the CMS.',
   slides: [
     {
       id: 'slide-1',
@@ -531,7 +543,7 @@ const mainPages = ['vi', 'en'].flatMap((locale) => [
       heroBlock(locale),
       createCtaBlock(locale),
       createDisciplinesBlock(locale),
-      createSlideshowBlock(locale),
+      createSlideshowBlock('tenant-main', locale),
       createEventListBlock(locale),
       createTimelineBlock(locale),
       createRichContentBlock(locale),
@@ -628,7 +640,7 @@ const classicPages = ['vi', 'en'].flatMap((locale) => [
       classicHeroBlock(locale),
       createCtaBlock(locale),
       createDisciplinesBlock(locale),
-      createSlideshowBlock(locale),
+      createSlideshowBlock('tenant-classic', locale),
       createEventListBlock(locale),
       createTimelineBlock(locale),
       createRichContentBlock(locale),

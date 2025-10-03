@@ -7,7 +7,7 @@ vi.mock('next/link', () => ({
 }));
 
 import type {Block} from '@types/blocks';
-import type {Event, Post} from '@types/cms';
+import type {Event, Post, Slideshow as SlideshowData} from '@types/cms';
 import {PageRenderer, isBlockHiddenEverywhere} from '../PageRenderer';
 
 describe('PageRenderer', () => {
@@ -55,6 +55,8 @@ describe('PageRenderer', () => {
     const getGallery = vi
       .fn<(options: {slug: string; limit?: number; sort?: 'latest' | 'oldest'}) => Promise<null>>()
       .mockResolvedValue(null);
+    const getSlideshow = vi.fn<(options: {id: string; limit?: number}) => Promise<SlideshowData | null>>()
+      .mockResolvedValue(null);
 
     const ui = await PageRenderer({
       blocks: [visibleBlock, postListBlock],
@@ -62,6 +64,7 @@ describe('PageRenderer', () => {
       getPosts,
       getEvents,
       getGallery,
+      getSlideshow,
       tenantPath: '',
       tenantId: 'tenant-main'
     });
@@ -95,6 +98,8 @@ describe('PageRenderer', () => {
     const getGallery = vi
       .fn<(options: {slug: string; limit?: number; sort?: 'latest' | 'oldest'}) => Promise<null>>()
       .mockResolvedValue(null);
+    const getSlideshow = vi.fn<(options: {id: string; limit?: number}) => Promise<SlideshowData | null>>()
+      .mockResolvedValue(null);
 
     const ui = await PageRenderer({
       blocks: [visibleBlock, hiddenBlock],
@@ -102,6 +107,7 @@ describe('PageRenderer', () => {
       getPosts,
       getEvents,
       getGallery,
+      getSlideshow,
       tenantPath: '',
       tenantId: 'tenant-main'
     });
@@ -110,5 +116,57 @@ describe('PageRenderer', () => {
 
     expect(screen.getByText('Hiển thị')).toBeInTheDocument();
     expect(screen.queryByText('Không hiển thị')).not.toBeInTheDocument();
+  });
+
+  it('tải slideshow khi block tham chiếu dữ liệu từ thư viện', async () => {
+    const slideshowBlock: Block = {
+      type: 'slideshow',
+      title: 'Khoảnh khắc nổi bật',
+      source: {type: 'slideshow', id: 'hero', limit: 2},
+      emptyStateMessage: 'Không có slide',
+      style: {container: 'wide'}
+    } as Block;
+
+    const getPosts = vi
+      .fn<(query?: {limit?: number; category?: string; tag?: string; q?: string}) => Promise<Post[]>>()
+      .mockResolvedValue([]);
+    const getEvents = vi
+      .fn<(options?: {limit?: number; status?: string; category?: string; q?: string}) => Promise<Event[]>>()
+      .mockResolvedValue([]);
+    const getGallery = vi
+      .fn<(options: {slug: string; limit?: number; sort?: 'latest' | 'oldest'}) => Promise<null>>()
+      .mockResolvedValue(null);
+    const getSlideshow = vi
+      .fn<(options: {id: string; limit?: number}) => Promise<SlideshowData | null>>()
+      .mockResolvedValue({
+        id: 'hero',
+        tenantId: 'tenant-main',
+        locale: 'vi',
+        name: 'Hero',
+        slides: [
+          {
+            id: 'slide-1',
+            title: 'Slide 1',
+            caption: 'Giới thiệu',
+            image: {id: 'img-1', url: 'https://example.com/slide1.jpg'}
+          }
+        ]
+      });
+
+    const ui = await PageRenderer({
+      blocks: [slideshowBlock],
+      locale: 'vi',
+      getPosts,
+      getEvents,
+      getGallery,
+      getSlideshow,
+      tenantPath: '',
+      tenantId: 'tenant-main'
+    });
+
+    render(ui);
+
+    expect(getSlideshow).toHaveBeenCalledWith({id: 'hero', limit: 2});
+    expect(await screen.findByText('Slide 1')).toBeInTheDocument();
   });
 });

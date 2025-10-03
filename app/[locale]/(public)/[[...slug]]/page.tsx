@@ -10,6 +10,7 @@ import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootPageStaticParams} from '@lib/static-paths';
 import {readDraftModeState} from '@lib/preview';
+import {getSlideshow as getSlideshowForTenant} from '@lib/slideshows';
 
 export const revalidate = DEFAULT_REVALIDATE_SECONDS;
 
@@ -104,6 +105,15 @@ export default async function Page({
             slug: options.slug,
             limit: options.limit,
             sort: options.sort,
+            preview
+          })
+        }
+        getSlideshow={(options) =>
+          getSlideshowForTenant({
+            tenantId: tenant.id,
+            locale,
+            id: options.id,
+            limit: options.limit,
             preview
           })
         }

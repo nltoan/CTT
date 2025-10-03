@@ -1,4 +1,4 @@
-import {getSlideshow} from '@lib/slideshows';
+import {getSlideshows} from '@lib/slideshows';
 import {resolveTenantFromParams} from '@lib/tenant';
 import {jsonResponseWithCache} from '@lib/http';
 import {getApiCacheTtl} from '@lib/settings';
@@ -8,10 +8,10 @@ import {
   tooManyRequestsResponse
 } from '@lib/rate-limit';
 
-export async function GET(request: Request, context: {params: {id: string}}) {
+export async function GET(request: Request) {
   const rateLimit = enforceRateLimit(request, {
     ...DEFAULT_PUBLIC_RATE_LIMIT,
-    identifier: 'slideshows:detail'
+    identifier: 'slideshows:list'
   });
 
   if (!rateLimit.ok) {
@@ -27,30 +27,24 @@ export async function GET(request: Request, context: {params: {id: string}}) {
   const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
   const normalizedLimit =
     typeof parsedLimit === 'number' && !Number.isNaN(parsedLimit) ? parsedLimit : undefined;
-  const slideshow = await getSlideshow({
+  const slideshows = await getSlideshows({
     tenantId: tenant.id,
     locale,
-    id: context.params.id,
     limit: normalizedLimit
   });
-
-  if (!slideshow) {
-    return jsonResponseWithCache({
-      request,
-      body: {error: 'Slideshow not found'},
-      status: 404,
-      ttl: 0,
-      headers: rateLimit.headers
-    });
-  }
 
   const ttl = getApiCacheTtl({tenantId: tenant.id, locale});
 
   return jsonResponseWithCache({
     request,
-    body: {data: slideshow},
+    body: {
+      data: slideshows,
+      meta: {
+        total: slideshows.length
+      }
+    },
     ttl,
-    cacheTags: [`tenant:${tenant.id}`, `slideshow:${slideshow.id}`],
+    cacheTags: [`tenant:${tenant.id}`, 'slideshows:list'],
     headers: rateLimit.headers
   });
 }

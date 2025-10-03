@@ -4,8 +4,12 @@ import {useCallback, useEffect, useMemo, useState} from 'react';
 import Link from 'next/link';
 
 import type {SlideshowBlock} from '@types/blocks';
+import type {Slideshow as SlideshowData} from '@types/cms';
 import type {Locale} from '@i18n/config';
 import {BlockSection} from './BlockSection';
+
+type BlockSlide = NonNullable<SlideshowBlock['slides']>[number];
+type Slide = BlockSlide | SlideshowData['slides'][number];
 
 function resolveSlideHref({
   href,
@@ -33,18 +37,47 @@ function resolveSlideHref({
 export function Slideshow({
   block,
   locale,
-  tenantPath
+  tenantPath,
+  slideshow
 }: {
   block: SlideshowBlock;
   locale: Locale;
   tenantPath?: string;
+  slideshow?: SlideshowData | null;
 }) {
-  const slides = block.slides;
+  const resolvedSlides = useMemo<Slide[]>(() => {
+    if (slideshow?.slides?.length) {
+      return slideshow.slides as Slide[];
+    }
+    return (block.slides ?? []) as Slide[];
+  }, [block.slides, slideshow?.slides]);
+
+  const slides = useMemo<Slide[]>(() => {
+    if (!slideshow?.slides?.length) {
+      return resolvedSlides;
+    }
+    const limitFromSource = block.source?.type === 'slideshow' ? block.source.limit : undefined;
+    if (typeof limitFromSource === 'number' && limitFromSource >= 0) {
+      return resolvedSlides.slice(0, limitFromSource);
+    }
+    return resolvedSlides;
+  }, [block.source?.limit, block.source?.type, resolvedSlides, slideshow?.slides?.length]);
+
+  const options = useMemo(() => {
+    if (!slideshow?.options) {
+      return block.options ?? {};
+    }
+    return {
+      ...slideshow.options,
+      ...block.options
+    };
+  }, [block.options, slideshow?.options]);
+
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const interval = block.options?.interval ?? 6000;
-  const autoplay = block.options?.autoplay ?? false;
-  const loop = block.options?.loop ?? true;
+  const interval = options.interval ?? 6000;
+  const autoplay = options.autoplay ?? false;
+  const loop = options.loop ?? true;
 
   const total = slides.length;
 
@@ -84,10 +117,18 @@ export function Slideshow({
   const dots = useMemo(() => new Array(total).fill(null).map((_, index) => index), [total]);
 
   if (!total) {
-    return null;
+    if (!block.emptyStateMessage) {
+      return null;
+    }
+    return (
+      <BlockSection block={block} className="rounded-3xl border border-dashed border-foreground/10 p-12 text-center">
+        <p className="text-sm text-foreground/70">{block.emptyStateMessage}</p>
+      </BlockSection>
+    );
   }
 
-  const currentSlide = slides[activeIndex];
+  const currentSlide = slides[Math.min(activeIndex, slides.length - 1)];
+  const currentImageUrl = currentSlide?.image?.url;
 
   return (
     <BlockSection
@@ -95,14 +136,11 @@ export function Slideshow({
       disableDefaultContainer
       className="relative isolate overflow-hidden bg-secondary text-white"
     >
-      <div className="absolute inset-0 opacity-30">
-        <img
-          src={currentSlide.image.url}
-          alt=""
-          className="h-full w-full object-cover"
-          aria-hidden
-        />
-      </div>
+      {currentImageUrl ? (
+        <div className="absolute inset-0 opacity-30">
+          <img src={currentImageUrl} alt="" className="h-full w-full object-cover" aria-hidden />
+        </div>
+      ) : null}
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-16">
         {(block.title || block.description) && (
           <header className="max-w-2xl">
@@ -113,7 +151,7 @@ export function Slideshow({
         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-secondary bg-opacity-60 shadow-xl">
           {(() => {
             const resolved = resolveSlideHref({
-              href: currentSlide.href,
+              href: currentSlide?.href,
               locale,
               tenantPath
             });
@@ -122,12 +160,7 @@ export function Slideshow({
             }
             if (resolved.external) {
               return (
-                <a
-                  href={resolved.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block"
-                >
+                <a href={resolved.href} target="_blank" rel="noopener noreferrer" className="group block">
                   <SlideContent slide={currentSlide} interactive />
                 </a>
               );
@@ -185,21 +218,29 @@ function SlideContent({
   slide,
   interactive = false
 }: {
-  slide: SlideshowBlock['slides'][number];
+  slide?: Slide;
   interactive?: boolean;
 }) {
+  if (!slide) {
+    return null;
+  }
+
+  const imageUrl = slide.image?.url;
+
   return (
     <div className="relative flex h-[420px] flex-col justify-end">
       <div className="absolute inset-0">
         {interactive ? <span aria-hidden className="absolute inset-0 z-10" /> : null}
         <div className="absolute inset-0">
           <div className="h-full w-full opacity-80">
-            <img
-              src={slide.image.url}
-              alt={slide.image.alt ?? slide.title ?? ''}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={slide.image?.alt ?? slide.title ?? ''}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : null}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
         </div>

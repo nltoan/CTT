@@ -180,6 +180,8 @@ export function BlockRenderer({ blocks }: { blocks: Block[] }) {
 Các block UI đã được scaffold trong frontend gồm: `hero-countdown`, `cta-buttons`, `disciplines-grid`, `slideshow`, `timeline`,
 `rich-content`, `image-gallery`, `testimonials`, `prizes`, `sponsors-grid`, `people-grid`, `event-list`, `post-list`, `contact`.
 
+Block `slideshow` có thể lấy dữ liệu động từ collection `slideshows`: khi block set `source: { type: 'slideshow', id, limit }` thì `PageRenderer` gọi helper `getSlideshow` (có cache TTL theo tenant/locale) để ghép slide từ seed/CMS; trường `slides` bên trong block đóng vai trò fallback hoặc seed nội dung ban đầu.
+
 Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) để điều chỉnh container, khoảng cách, màu nền/overlay, override CSS variables và giới hạn hiển thị theo breakpoint. Wrapper `components/blocks/BlockSection.tsx` đọc `style` và áp dụng class/inline-style tương ứng; `PageRenderer` bỏ qua block nếu `style.visibility` tắt cả `mobile`/`tablet`/`desktop`.
 
 ### Trang Tin tức & phân trang
@@ -245,7 +247,8 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /people`, `GET /people/:slug` (trả metadata đầy đủ + danh sách cố vấn liên quan), `GET /sponsors`
 - `GET /settings`
 - `GET /navigations`
-- `GET /slideshows/:id`
+- `GET /slideshows` (tham số `tenant`, `locale`, `limit` → trả về danh sách slideshow cùng tổng số)
+- `GET /slideshows/:id` (tham số `tenant`, `locale`, `limit` → trả về slideshow với mảng slide đã cắt theo limit)
 
 Song song với JSON API, frontend cung cấp feed/download dạng văn bản tĩnh để các đối tác tích hợp:
 

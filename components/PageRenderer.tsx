@@ -14,7 +14,7 @@ import {RichContent} from './blocks/RichContent';
 import {EventList} from './blocks/EventList';
 
 import type {Block} from '@types/blocks';
-import type {Event, Gallery, Post} from '@types/cms';
+import type {Event, Gallery, Post, Slideshow as SlideshowData} from '@types/cms';
 import type {FormView} from '@types/forms';
 import type {Locale} from '@i18n/config';
 import {getFormView} from '@lib/forms';
@@ -38,6 +38,7 @@ type GalleryLookup = (options: {
   limit?: number;
   sort?: 'latest' | 'oldest';
 }) => Promise<(Gallery & {hasMore?: boolean; totalItems?: number}) | null>;
+type SlideshowLookup = (options: {id: string; limit?: number}) => Promise<SlideshowData | null>;
 
 export function isBlockHiddenEverywhere(block: Block) {
   const visibility = block.style?.visibility;
@@ -54,6 +55,7 @@ export async function PageRenderer({
   getPosts,
   getEvents,
   getGallery,
+  getSlideshow,
   tenantPath = '',
   tenantId
 }: {
@@ -62,6 +64,7 @@ export async function PageRenderer({
   getPosts: PostLookup;
   getEvents: EventLookup;
   getGallery: GalleryLookup;
+  getSlideshow: SlideshowLookup;
   tenantPath?: string;
   tenantId: string;
 }) {
@@ -92,6 +95,13 @@ export async function PageRenderer({
         });
         return {block, gallery};
       }
+      if (block.type === 'slideshow' && block.source?.type === 'slideshow') {
+        const slideshow = await getSlideshow({
+          id: block.source.id,
+          limit: block.source.limit
+        });
+        return {block, slideshow};
+      }
       if (block.type === 'contact' && block.formKey) {
         const form = await getFormView({
           tenantId,
@@ -112,13 +122,15 @@ export async function PageRenderer({
           posts,
           events,
           form,
-          gallery
+          gallery,
+          slideshow
         }: {
           block: Block;
           posts?: Post[];
           events?: Event[];
           form?: FormView | null;
           gallery?: (Gallery & {hasMore?: boolean; totalItems?: number}) | null;
+          slideshow?: SlideshowData | null;
         },
         index
       ) => {
@@ -187,7 +199,15 @@ export async function PageRenderer({
           case 'cta-buttons':
             return <CtaButtons key={index} block={block} locale={locale} tenantPath={tenantPath} />;
           case 'slideshow':
-            return <Slideshow key={index} block={block} locale={locale} tenantPath={tenantPath} />;
+            return (
+              <Slideshow
+                key={index}
+                block={block}
+                locale={locale}
+                tenantPath={tenantPath}
+                slideshow={slideshow ?? undefined}
+              />
+            );
           case 'rich-content':
             return <RichContent key={index} block={block} />;
           default:

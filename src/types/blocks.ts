@@ -218,13 +218,19 @@ export type SlideshowBlock = BlockBase & {
   type: 'slideshow';
   title?: string;
   description?: string;
-  slides: {
+  slides?: {
     id: string;
     image: MediaRef;
     title?: string;
     caption?: string;
     href?: string;
   }[];
+  source?: {
+    type: 'slideshow';
+    id: string;
+    limit?: number;
+  };
+  emptyStateMessage?: string;
   options?: {
     autoplay?: boolean;
     interval?: number;
