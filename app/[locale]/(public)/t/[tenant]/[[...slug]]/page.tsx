@@ -4,6 +4,7 @@ import {PageRenderer} from '@components/PageRenderer';
 import {PageShell} from '@components/layout/PageShell';
 import {getNavigation, getPageForTenant, getRecentPosts} from '@lib/pages';
 import {getEvents as getEventsForTenant} from '@lib/events';
+import {getGalleryPreview} from '@lib/galleries';
 import {createPageMetadata} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
@@ -89,6 +90,15 @@ export default async function TenantPage({
             status: options?.status,
             category: options?.category,
             q: options?.q
+          })
+        }
+        getGallery={(options) =>
+          getGalleryPreview({
+            tenantId: tenant.id,
+            locale,
+            slug: options.slug,
+            limit: options.limit,
+            sort: options.sort
           })
         }
         tenantPath={tenantPath}

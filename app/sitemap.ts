@@ -4,6 +4,8 @@ import {tenants} from '@data/tenants';
 import {listPagesByTenant} from '@data/pages';
 import {listPostsByTenant} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
+import {listGalleriesByTenant} from '@data/galleries';
+import {listPeopleByTenant} from '@data/people';
 import {buildAbsoluteUrl, buildPath} from '@lib/seo';
 
 function toDate(value?: string) {
@@ -67,10 +69,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.75
       });
 
+      const galleries = listGalleriesByTenant({tenantId: tenant.id, locale});
+      const people = listPeopleByTenant({tenantId: tenant.id, locale});
+      galleries.forEach((gallery) => {
+        const galleryPath = buildPath({locale, tenantPath, slugSegments: ['galleries', gallery.slug]});
+        entries.push({
+          url: buildAbsoluteUrl(galleryPath),
+          lastModified: toDate(gallery.updatedAt),
+          changeFrequency: 'weekly',
+          priority: 0.65
+        });
+      });
+      const galleriesPath = buildPath({locale, tenantPath, slugSegments: ['galleries']});
+      entries.push({
+        url: buildAbsoluteUrl(galleriesPath),
+        lastModified: toDate(galleries[0]?.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.7
+      });
+
+      people.forEach((person) => {
+        const personPath = buildPath({locale, tenantPath, slugSegments: ['people', person.slug]});
+        entries.push({
+          url: buildAbsoluteUrl(personPath),
+          lastModified: toDate(person.updatedAt),
+          changeFrequency: 'monthly',
+          priority: 0.65
+        });
+      });
+
       const peoplePath = buildPath({locale, tenantPath, slugSegments: ['people']});
       entries.push({
         url: buildAbsoluteUrl(peoplePath),
-        lastModified: toDate(pages.find((page) => page.slug === 'people')?.updatedAt),
+        lastModified: toDate(people[0]?.updatedAt ?? pages.find((page) => page.slug === 'people')?.updatedAt),
         changeFrequency: 'weekly',
         priority: 0.7
       });

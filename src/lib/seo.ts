@@ -1,10 +1,12 @@
 import type {Metadata} from 'next';
 
-import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor} from '@types/cms';
+import type {Navigation, Page, Post, Tenant, Event, Person, Sponsor, Gallery} from '@types/cms';
 import type {ResolvedSiteSettings} from '@lib/settings';
 import {findPageTranslations} from '@data/pages';
 import {findPostTranslations} from '@data/posts';
 import {findEventTranslations} from '@data/events';
+import {findGalleryTranslations} from '@data/galleries';
+import {findPersonTranslations} from '@data/people';
 
 const DEFAULT_OG_IMAGE = 'https://images.unsplash.com/photo-1485579149621-3123dd979885';
 const LOCALE_TO_BCP47: Record<'vi' | 'en', string> = {
@@ -321,6 +323,66 @@ export function createEventMetadata({
   } satisfies Metadata;
 }
 
+export function createGalleryMetadata({
+  gallery,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  gallery: Gallery;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}): Metadata {
+  const slugSegments = ['galleries', gallery.slug];
+  const canonicalPath = buildPath({locale, tenantPath, slugSegments});
+  const canonicalUrl = buildAbsoluteUrl(canonicalPath);
+  const defaults = settings?.seo ?? {};
+  const description = gallery.description ?? defaults.description ?? tenant.description ?? '';
+  const image = resolveImage(gallery.coverImage?.url, tenant, defaults.image);
+  const translations = findGalleryTranslations({
+    translationKey: gallery.translationKey,
+    galleryId: gallery.id
+  });
+  const alternateLanguages = Object.fromEntries(
+    translations.map((translation) => {
+      const path = buildPath({
+        locale: translation.locale,
+        tenantPath,
+        slugSegments: ['galleries', translation.slug]
+      });
+      return [translation.locale, buildAbsoluteUrl(path)];
+    })
+  );
+
+  return {
+    title: gallery.title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: alternateLanguages
+    },
+    openGraph: {
+      type: 'website',
+      url: canonicalUrl,
+      title: gallery.title,
+      description,
+      siteName: defaults.siteName ?? tenant.name,
+      locale: mapLocaleToBcp47(locale),
+      images: [{url: image}],
+      modifiedTime: gallery.updatedAt
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: gallery.title,
+      description,
+      images: [image]
+    }
+  } satisfies Metadata;
+}
+
 export function buildOrganizationJsonLd({
   tenant,
   locale,
@@ -439,6 +501,7 @@ export function buildArticleJsonLd({
   const defaults = settings?.seo ?? {};
   const image = resolveImage(post.coverImage, tenant, defaults.image);
   const organization = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const {['@context']: _context, ...affiliation} = organization as Record<string, unknown>;
   const description = post.excerpt ?? defaults.description ?? tenant.description ?? '';
   const authorName = post.author ?? defaults.organizationName ?? defaults.siteName ?? tenant.name;
 
@@ -466,6 +529,63 @@ export function buildArticleJsonLd({
       }
     }
   };
+}
+
+export function createPersonMetadata({
+  person,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  person: Person;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}): Metadata {
+  const canonicalPath = buildPath({locale, tenantPath, slugSegments: ['people', person.slug]});
+  const canonicalUrl = buildAbsoluteUrl(canonicalPath);
+  const defaults = settings?.seo ?? {};
+  const description = person.bio ?? defaults.description ?? tenant.description ?? '';
+  const image = resolveImage(person.photo?.url, tenant, defaults.image);
+
+  const translations = findPersonTranslations({tenantId: person.tenantId, slug: person.slug});
+  const alternateLanguages = Object.fromEntries(
+    translations
+      .filter((translation) => translation.locale !== locale)
+      .map((translation) => [
+        translation.locale,
+        buildAbsoluteUrl(
+          buildPath({locale: translation.locale, tenantPath, slugSegments: ['people', translation.slug]})
+        )
+      ])
+  );
+
+  return {
+    title: `${person.name} – ${tenant.name}`,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: alternateLanguages
+    },
+    openGraph: {
+      type: 'profile',
+      url: canonicalUrl,
+      title: person.name,
+      description,
+      siteName: defaults.siteName ?? tenant.name,
+      locale: mapLocaleToBcp47(locale),
+      images: [{url: image}],
+      updatedTime: person.updatedAt
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: person.name,
+      description,
+      images: [image]
+    }
+  } satisfies Metadata;
 }
 
 export function buildPeopleJsonLd({
@@ -504,6 +624,44 @@ export function buildPeopleJsonLd({
       image: person.photo?.url,
       url: `${baseUrl}#person-${person.id}`
     }))
+  };
+}
+
+export function buildPersonJsonLd({
+  person,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  person: Person;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  const path = buildPath({locale, tenantPath, slugSegments: ['people', person.slug]});
+  const url = buildAbsoluteUrl(path);
+  const defaults = settings?.seo ?? {};
+  const image = resolveImage(person.photo?.url, tenant, defaults.image);
+  const organization = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const {['@context']: _context, ...affiliation} = organization as Record<string, unknown>;
+  const sameAs = person.socialLinks?.map((link) => link.url).filter(Boolean) ?? [];
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: person.name,
+    jobTitle: person.title,
+    description: person.bio,
+    image,
+    url,
+    affiliation,
+    award: person.achievements ?? [],
+    knowsAbout: person.disciplines ?? [],
+    sameAs,
+    email: person.contactEmail,
+    telephone: person.contactPhone
   };
 }
 
@@ -584,6 +742,43 @@ export function buildNewsListJsonLd({
   };
 }
 
+export function buildGalleryListJsonLd({
+  galleries,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  galleries: Gallery[];
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  if (!galleries.length) {
+    return null;
+  }
+
+  const defaults = settings?.seo ?? {};
+  const listName = `${defaults.siteName ?? tenant.name} galleries`;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: listName,
+    numberOfItems: galleries.length,
+    itemListElement: galleries.map((gallery, index) => ({
+      '@type': 'CollectionPage',
+      position: index + 1,
+      name: gallery.title,
+      url: buildAbsoluteUrl(
+        buildPath({locale, tenantPath, slugSegments: ['galleries', gallery.slug]})
+      ),
+      dateModified: gallery.updatedAt
+    }))
+  };
+}
+
 export function buildEventJsonLd({
   event,
   tenant,
@@ -624,6 +819,60 @@ export function buildEventJsonLd({
     image: event.coverImage ? [event.coverImage] : undefined,
     url: buildAbsoluteUrl(path)
   };
+}
+
+export function buildGalleryJsonLd({
+  gallery,
+  tenant,
+  locale,
+  tenantPath,
+  settings
+}: {
+  gallery: Gallery;
+  tenant: Tenant;
+  locale: 'vi' | 'en';
+  tenantPath: string;
+  settings?: ResolvedSiteSettings;
+}) {
+  const organization = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
+  const path = buildPath({locale, tenantPath, slugSegments: ['galleries', gallery.slug]});
+  const items = gallery.items.map((item, index) => {
+    const base = {
+      '@type': item.media.type === 'video' ? 'VideoObject' : 'ImageObject',
+      position: index + 1,
+      name: item.caption ?? gallery.title,
+      contentUrl: item.media.url,
+      url: item.media.url,
+      thumbnailUrl: item.media.url
+    } as Record<string, unknown>;
+    if (item.description ?? item.caption) {
+      base.description = item.description ?? item.caption;
+    }
+    return base;
+  });
+
+  const payload: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: gallery.title,
+    description: gallery.description ?? tenant.description ?? '',
+    inLanguage: mapLocaleToBcp47(locale),
+    url: buildAbsoluteUrl(path),
+    dateModified: gallery.updatedAt,
+    isPartOf: {
+      '@type': 'Organization',
+      name: organization.name,
+      url: organization.url,
+      sameAs: organization.sameAs
+    },
+    hasPart: items
+  };
+
+  if (gallery.tags?.length) {
+    payload.about = gallery.tags;
+  }
+
+  return payload;
 }
 
 export function buildEventsGraphJsonLd({

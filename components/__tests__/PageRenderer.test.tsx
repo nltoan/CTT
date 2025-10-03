@@ -52,11 +52,16 @@ describe('PageRenderer', () => {
       .fn<(options?: {limit?: number; status?: string; category?: string; q?: string}) => Promise<Event[]>>()
       .mockResolvedValue([]);
 
+    const getGallery = vi
+      .fn<(options: {slug: string; limit?: number; sort?: 'latest' | 'oldest'}) => Promise<null>>()
+      .mockResolvedValue(null);
+
     const ui = await PageRenderer({
       blocks: [visibleBlock, postListBlock],
       locale: 'vi',
       getPosts,
       getEvents,
+      getGallery,
       tenantPath: '',
       tenantId: 'tenant-main'
     });
@@ -87,11 +92,16 @@ describe('PageRenderer', () => {
       .fn<(options?: {limit?: number; status?: string; category?: string; q?: string}) => Promise<Event[]>>()
       .mockResolvedValue([]);
 
+    const getGallery = vi
+      .fn<(options: {slug: string; limit?: number; sort?: 'latest' | 'oldest'}) => Promise<null>>()
+      .mockResolvedValue(null);
+
     const ui = await PageRenderer({
       blocks: [visibleBlock, hiddenBlock],
       locale: 'vi',
       getPosts,
       getEvents,
+      getGallery,
       tenantPath: '',
       tenantId: 'tenant-main'
     });

@@ -117,6 +117,9 @@ export type PeopleGridBlock = BlockBase & {
     title?: string;
     photo?: MediaRef;
     bio?: string;
+    disciplines?: string[];
+    href?: string;
+    ctaLabel?: string;
   }[];
 };
 
@@ -182,11 +185,22 @@ export type ImageGalleryBlock = BlockBase & {
   title?: string;
   description?: string;
   layout?: 'grid' | 'masonry';
-  items: {
+  items?: {
     media: MediaRef;
     caption?: string;
     href?: string;
   }[];
+  source?: {
+    type: 'gallery';
+    slug: string;
+    limit?: number;
+    sort?: 'latest' | 'oldest';
+  };
+  emptyStateMessage?: string;
+  viewAll?: {
+    label?: string;
+    href?: string;
+  };
 };
 
 export type CtaButtonsBlock = BlockBase & {

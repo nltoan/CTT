@@ -1,6 +1,7 @@
 import type {Page} from '@types/cms';
 import {listPeopleByTenant} from '@data/people';
 import {listSponsorsByTenant} from '@data/sponsors';
+import {tenants} from '@data/tenants';
 import type {
   ContactBlock,
   DisciplinesGridBlock,
@@ -246,6 +247,13 @@ const createSponsorsBlock = (tenantId: string, locale: 'vi' | 'en'): SponsorsGri
 
 const createPeopleBlock = (tenantId: string, locale: 'vi' | 'en'): PeopleGridBlock => {
   const people = listPeopleByTenant({tenantId, locale});
+  const tenant = tenants.find((item) => item.id === tenantId);
+  const segments = [locale];
+  if (tenant && tenant.slug !== 'main') {
+    segments.push('t', tenant.slug);
+  }
+  segments.push('people');
+  const baseProfilePath = `/${segments.join('/')}`;
   return {
     type: 'people-grid',
     title: locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury',
@@ -261,7 +269,10 @@ const createPeopleBlock = (tenantId: string, locale: 'vi' | 'en'): PeopleGridBlo
       name: person.name,
       title: person.title,
       bio: person.bio,
-      photo: person.photo
+      photo: person.photo,
+      disciplines: person.disciplines,
+      href: `${baseProfilePath}/${person.slug}`.replace(/\/+/, '/'),
+      ctaLabel: locale === 'vi' ? 'Xem hồ sơ' : 'View profile'
     })),
     style: {
       container: 'wide',
@@ -325,40 +336,14 @@ const createGalleryBlock = (locale: 'vi' | 'en'): ImageGalleryBlock => ({
       ? 'Hình ảnh từ các vòng thi và chương trình hòa nhạc của CTT.'
       : 'Scenes captured from CTT rounds and concerts.',
   layout: 'masonry',
-  items: [
-    {
-      media: {
-        id: 'gallery-1',
-        url: 'https://images.unsplash.com/photo-1485579149621-3123dd979885',
-        alt: 'Pianist performing on stage'
-      },
-      caption: locale === 'vi' ? 'Biểu diễn Piano đêm chung kết' : 'Final night piano performance'
-    },
-    {
-      media: {
-        id: 'gallery-2',
-        url: 'https://images.unsplash.com/photo-1520512202623-51c5cdb34f6f',
-        alt: 'String quartet'
-      },
-      caption: locale === 'vi' ? 'Tứ tấu dây học viện' : 'Academy string quartet'
-    },
-    {
-      media: {
-        id: 'gallery-3',
-        url: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef',
-        alt: 'Audience applauding'
-      },
-      caption: locale === 'vi' ? 'Khán giả tại Nhà hát lớn' : 'Audience at the Opera House'
-    },
-    {
-      media: {
-        id: 'gallery-4',
-        url: 'https://images.unsplash.com/photo-1484920287878-4b5e04d74fdc',
-        alt: 'Vocal performance'
-      },
-      caption: locale === 'vi' ? 'Thí sinh hạng mục Thanh nhạc' : 'Vocal category contestant'
-    }
-  ],
+  source: {
+    type: 'gallery',
+    slug: locale === 'vi' ? 'khoanh-khac-noi-bat' : 'festival-highlights',
+    limit: 6
+  },
+  viewAll: {
+    label: locale === 'vi' ? 'Xem toàn bộ thư viện' : 'View full gallery'
+  },
   style: {
     container: 'wide',
     spacing: {padding: 'md'}

@@ -6,6 +6,7 @@ import {PageShell} from '@components/layout/PageShell';
 import {PageRenderer} from '@components/PageRenderer';
 import {getNavigation, getRecentPosts} from '@lib/pages';
 import {getEvent, getEvents as fetchEventsForBlocks} from '@lib/events';
+import {getGalleryPreview} from '@lib/galleries';
 import {createEventMetadata, buildEventJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
@@ -209,6 +210,15 @@ export default async function EventDetail({
               status: options?.status,
               category: options?.category,
               q: options?.q
+            })
+          }
+          getGallery={(options) =>
+            getGalleryPreview({
+              tenantId: tenant.id,
+              locale,
+              slug: options.slug,
+              limit: options.limit,
+              sort: options.sort
             })
           }
         />

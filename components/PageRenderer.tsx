@@ -14,7 +14,7 @@ import {RichContent} from './blocks/RichContent';
 import {EventList} from './blocks/EventList';
 
 import type {Block} from '@types/blocks';
-import type {Event, Post} from '@types/cms';
+import type {Event, Gallery, Post} from '@types/cms';
 import type {FormView} from '@types/forms';
 import type {Locale} from '@i18n/config';
 import {getFormView} from '@lib/forms';
@@ -33,6 +33,11 @@ type EventLookup = (options?: {
   category?: string;
   q?: string;
 }) => Promise<Event[]>;
+type GalleryLookup = (options: {
+  slug: string;
+  limit?: number;
+  sort?: 'latest' | 'oldest';
+}) => Promise<(Gallery & {hasMore?: boolean; totalItems?: number}) | null>;
 
 export function isBlockHiddenEverywhere(block: Block) {
   const visibility = block.style?.visibility;
@@ -48,6 +53,7 @@ export async function PageRenderer({
   locale,
   getPosts,
   getEvents,
+  getGallery,
   tenantPath = '',
   tenantId
 }: {
@@ -55,6 +61,7 @@ export async function PageRenderer({
   locale: Locale;
   getPosts: PostLookup;
   getEvents: EventLookup;
+  getGallery: GalleryLookup;
   tenantPath?: string;
   tenantId: string;
 }) {
@@ -77,6 +84,14 @@ export async function PageRenderer({
         });
         return {block, events};
       }
+      if (block.type === 'image-gallery' && block.source?.type === 'gallery') {
+        const gallery = await getGallery({
+          slug: block.source.slug,
+          limit: block.source.limit,
+          sort: block.source.sort
+        });
+        return {block, gallery};
+      }
       if (block.type === 'contact' && block.formKey) {
         const form = await getFormView({
           tenantId,
@@ -96,12 +111,14 @@ export async function PageRenderer({
           block,
           posts,
           events,
-          form
+          form,
+          gallery
         }: {
           block: Block;
           posts?: Post[];
           events?: Event[];
           form?: FormView | null;
+          gallery?: (Gallery & {hasMore?: boolean; totalItems?: number}) | null;
         },
         index
       ) => {
@@ -151,7 +168,15 @@ export async function PageRenderer({
           case 'testimonials':
             return <Testimonials key={index} block={block} />;
           case 'image-gallery':
-            return <ImageGallery key={index} block={block} />;
+            return (
+              <ImageGallery
+                key={index}
+                block={block}
+                gallery={gallery}
+                locale={locale}
+                tenantPath={tenantPath}
+              />
+            );
           case 'cta-buttons':
             return <CtaButtons key={index} block={block} locale={locale} tenantPath={tenantPath} />;
           case 'slideshow':

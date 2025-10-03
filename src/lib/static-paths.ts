@@ -1,6 +1,8 @@
 import {listPagesByTenant} from '@data/pages';
 import {listPostsByTenant} from '@data/posts';
 import {listEventsByTenant} from '@data/events';
+import {listGalleriesByTenant} from '@data/galleries';
+import {listPeopleByTenant} from '@data/people';
 import {tenants} from '@data/tenants';
 import type {Tenant} from '@types/cms';
 import {getDefaultTenant} from '@lib/tenant';
@@ -9,7 +11,7 @@ type Locale = 'vi' | 'en';
 
 type CatchAllParam = string[];
 
-const RESERVED_PAGE_SLUGS = new Set(['people', 'partners', 'news', 'events']);
+const RESERVED_PAGE_SLUGS = new Set(['people', 'partners', 'news', 'events', 'galleries']);
 
 function toSegments(slug: string): CatchAllParam {
   if (!slug) {
@@ -94,6 +96,28 @@ export function getTenantEventStaticParams() {
   );
 }
 
+export function getRootGalleryStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listGalleriesByTenant({tenantId: tenant.id, locale}).map((gallery) => ({
+      locale,
+      slug: gallery.slug
+    }))
+  );
+}
+
+export function getTenantGalleryStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listGalleriesByTenant({tenantId: tenant.id, locale}).map((gallery) => ({
+        locale,
+        tenant: tenant.slug,
+        slug: gallery.slug
+      }))
+    )
+  );
+}
+
 export function getRootPeopleStaticParams() {
   const tenant = getDefaultTenant();
   return tenantLocales(tenant).map((locale) => ({locale}));
@@ -119,5 +143,27 @@ export function getTenantPartnersStaticParams() {
       tenant: tenant.slug,
       locale
     }))
+  );
+}
+
+export function getRootPersonStaticParams() {
+  const tenant = getDefaultTenant();
+  return tenantLocales(tenant).flatMap((locale) =>
+    listPeopleByTenant({tenantId: tenant.id, locale}).map((person) => ({
+      locale,
+      slug: person.slug
+    }))
+  );
+}
+
+export function getTenantPersonStaticParams() {
+  return tenants.flatMap((tenant) =>
+    tenantLocales(tenant).flatMap((locale) =>
+      listPeopleByTenant({tenantId: tenant.id, locale}).map((person) => ({
+        tenant: tenant.slug,
+        locale,
+        slug: person.slug
+      }))
+    )
   );
 }

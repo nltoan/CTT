@@ -26,6 +26,21 @@ export async function getPersonBySlug({
   return findPersonBySlug({tenantId, slug, locale});
 }
 
+export async function getRelatedPeople({
+  tenantId,
+  locale,
+  excludePersonId,
+  limit = 3
+}: {
+  tenantId: string;
+  locale: 'vi' | 'en';
+  excludePersonId: string;
+  limit?: number;
+}): Promise<Person[]> {
+  const people = await getPeople({tenantId, locale});
+  return people.filter((person) => person.id !== excludePersonId).slice(0, limit);
+}
+
 export async function getSponsors({
   tenantId,
   locale

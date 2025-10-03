@@ -76,13 +76,20 @@ export default async function PeopleIndex({
     getPeople({tenantId: tenant.id, locale})
   ]);
 
+  const baseProfilePath = `/${[locale, tenantPath.replace(/^\//, ''), 'people']
+    .filter(Boolean)
+    .join('/')}`.replace(/\/+/, '/');
+
   const block = {
     ...buildBaseBlock(locale),
     items: people.map((person) => ({
       name: person.name,
       title: person.title,
       bio: person.bio,
-      photo: person.photo
+      photo: person.photo,
+      disciplines: person.disciplines,
+      href: `${baseProfilePath}/${person.slug}`.replace(/\/+/, '/'),
+      ctaLabel: locale === 'vi' ? 'Xem hồ sơ' : 'View profile'
     }))
   };
 

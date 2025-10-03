@@ -185,6 +185,14 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - Khối nội dung bổ sung (`event.blocks`) dùng lại `PageRenderer` nên có thể cấy timeline, CTA, gallery… trực tiếp từ CMS.
 - Mục “More events” lấy dữ liệu từ helper `getEvents` (lọc sự kiện sắp diễn ra, fallback danh sách toàn bộ) để tăng tỷ lệ chuyển đổi.
 
+### Trang Thư viện & chi tiết
+
+- Route `/[locale]/galleries` (và `/[locale]/t/[tenant]/galleries`) đọc `searchParams` gồm `category`, `tag`, `q`, `sort`, `page` để render danh sách bộ sưu tập ảnh/video.
+- `getGalleryListing` trả về `{items, meta: {totalItems, totalPages, page, limit}}` và bộ lọc (categories/tags) để hiển thị form GET, nút “Bỏ lọc” và component `Pagination` dùng chung.
+- JSON-LD `ItemList` được sinh qua `buildGalleryListJsonLd`, giúp các bộ sưu tập xuất hiện như một danh sách media trong công cụ tìm kiếm.
+- Trang chi tiết `/galleries/[slug]` render `createGalleryMetadata`, `buildGalleryJsonLd`, breadcrumbs và hiển thị media theo layout `grid` hoặc `masonry` tùy cấu hình, kèm fallback khi gallery trống.
+- Block `image-gallery` chấp nhận thuộc tính `source: {type: 'gallery', slug, limit, sort}` để nạp dữ liệu preview trực tiếp từ collection gallery, đồng thời vẫn hỗ trợ danh sách media inline.
+
 Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
 
 ## API Public Layer
@@ -195,10 +203,12 @@ CMS cung cấp Endpoint public (REST) dạng `/api/public/v1/...` với caching:
 - `GET /posts` (hỗ trợ `page`, `limit`, `category`, `tag`, `q`, trả kèm `meta` tổng số bài viết và số trang), `GET /posts/:slug` (bao gồm mảng `related`)
 - `GET /events` (hỗ trợ `page`, `limit`, `status`, `category`, `q`, trả kèm `meta`)
 - `GET /events/:slug`
-- `GET /people`, `GET /sponsors`
+- `GET /galleries` (hỗ trợ `page`, `limit`, `category`, `tag`, `q`, `sort`, trả kèm `meta` và filters)
+- `GET /galleries/:slug`
+- `GET /people`, `GET /people/:slug` (trả metadata đầy đủ + danh sách cố vấn liên quan), `GET /sponsors`
 - `GET /settings`
 - `GET /navigations`
-- `GET /galleries/:id`, `GET /slideshows/:id`
+- `GET /slideshows/:id`
 
 Áp dụng `jsonResponseWithCache` (helper `src/lib/http.ts`) để tự động sinh ETag + header `Cache-Control` cho mọi phản hồi 200. TTL đọc từ `settings.revalidateSeconds` (global → override per tenant) giúp đồng bộ chiến lược cache giữa CDN/API.
 
@@ -223,7 +233,7 @@ Payload nên gửi kèm `secret` (khớp `REVALIDATE_SECRET`) và có thể mở
 - Render `<link rel="alternate" hrefLang="vi">` & `en`.
 - Metadata helper `src/lib/seo.ts` sinh canonical URL, Open Graph/Twitter card, alternates hreflang, JSON-LD và tái sử dụng cho page/post/collection.
 - Sitemap generator per tenant: `app/sitemap.ts` lấy data `pages`, `posts`, `events`, tự động tính `priority`/`lastModified`.
-- Structured data JSON-LD: `Organization`, `SiteNavigation`, `Breadcrumb`, `Article`, `Event`, `ItemList` cho news/people/sponsors.
+- Structured data JSON-LD: `Organization`, `SiteNavigation`, `Breadcrumb`, `Article`, `Event`, `ItemList` (listing) và `Person` (hồ sơ giám khảo) cho news/people/sponsors.
 - Robots.txt: `app/robots.ts` dùng `NEXT_PUBLIC_SITE_URL` (hoặc `SITE_URL`) để xuất `Host` và `Sitemap`.
 
 ## Hiệu năng & A11y

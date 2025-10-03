@@ -98,6 +98,12 @@ export type PersonSocialProfile = {
   platform?: 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'website' | string;
 };
 
+export type PersonHighlight = {
+  title: string;
+  description?: string;
+  year?: string;
+};
+
 export type Person = {
   id: string;
   slug: string;
@@ -109,6 +115,15 @@ export type Person = {
   order?: number;
   photo?: MediaRef;
   socialLinks?: PersonSocialProfile[];
+  disciplines?: string[];
+  achievements?: string[];
+  highlights?: PersonHighlight[];
+  quote?: string;
+  videoEmbedUrl?: string;
+  blocks?: Block[];
+  updatedAt?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 };
 
 export type Sponsor = {
@@ -120,6 +135,30 @@ export type Sponsor = {
   url?: string;
   logo: MediaRef;
   description?: string;
+};
+
+export type GalleryItem = {
+  id: string;
+  media: MediaRef;
+  caption?: string;
+  description?: string;
+  featured?: boolean;
+};
+
+export type Gallery = {
+  id: string;
+  slug: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  title: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  coverImage?: MediaRef;
+  layout?: 'grid' | 'masonry';
+  items: GalleryItem[];
+  updatedAt?: string;
 };
 
 export type AnalyticsSettings = {
