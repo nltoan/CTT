@@ -1,3 +1,5 @@
+import {defaultLocale} from '@i18n/config';
+
 export function buildQueryString(base: {
   page?: number;
   category?: string | null;
@@ -23,4 +25,24 @@ export function buildQueryString(base: {
   }
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';
+}
+
+export function buildLocalizedPath({
+  locale,
+  tenantPath = '',
+  slug
+}: {
+  locale: 'vi' | 'en';
+  tenantPath?: string;
+  slug?: string;
+}) {
+  const localePrefix = locale === defaultLocale ? '' : `/${locale}`;
+  const base = `${localePrefix}${tenantPath ?? ''}`;
+  const normalizedSlug = slug
+    ? slug.startsWith('/')
+      ? slug
+      : `/${slug}`
+    : '';
+  const path = `${base}${normalizedSlug}`;
+  return path || '/';
 }

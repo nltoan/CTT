@@ -199,6 +199,12 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - Khối nội dung bổ sung (`event.blocks`) dùng lại `PageRenderer` nên có thể cấy timeline, CTA, gallery… trực tiếp từ CMS.
 - Mục “More events” lấy dữ liệu từ helper `getEvents` (lọc sự kiện sắp diễn ra, fallback danh sách toàn bộ) để tăng tỷ lệ chuyển đổi.
 
+### Trải nghiệm 404 đa tenant
+
+- Các route trong nhóm `(public)` (bao gồm biến thể `/t/[tenant]`) có `not-found.tsx` riêng để tái sử dụng `PageShell`, đảm bảo header/footer và biến theme của tenant vẫn hiển thị khi trang không tồn tại.
+- Component `NotFoundContent` hiển thị thông điệp song ngữ, nút quay về trang chủ và liên kết đến trang tìm kiếm để người dùng tiếp tục khám phá nội dung.
+- Helper `buildLocalizedPath` trong `@lib/url` chuẩn hoá việc ghép locale + tenant path + slug cho các liên kết nội bộ; helper này được bao phủ bởi unit test mới nhằm tránh sai sót về URL.
+
 ### Trang Bộ môn & chi tiết
 
 - Route `/[locale]/disciplines` (và `/[locale]/t/[tenant]/disciplines`) đọc `searchParams` gồm `category`, `level`, `q`, `page` để render danh sách bộ môn với grid responsive và component `Pagination`.

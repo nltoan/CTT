@@ -15,5 +15,12 @@ export default {
   },
   footer: {
     rights: 'Đã đăng ký bản quyền.'
+  },
+  notFound: {
+    title: 'Không tìm thấy trang bạn yêu cầu',
+    description:
+      'Có thể đường dẫn đã bị thay đổi hoặc nội dung này không còn tồn tại. Bạn có thể quay lại trang chủ hoặc dùng tính năng tìm kiếm để tiếp tục khám phá.',
+    homeCta: 'Về trang chủ',
+    searchCta: 'Tìm kiếm nội dung'
   }
 } as const;
