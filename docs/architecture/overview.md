@@ -95,6 +95,17 @@ frontend/
 
 ## Payload CMS Schema
 
+### Implementation in repo
+
+Cấu hình thực thi nằm tại thư mục [`cms/`](../../cms):
+
+- `payload.config.ts` đăng ký toàn bộ collection/globals, kết nối Postgres và plugin cloud storage.
+- Các collection trong `cms/collections` bám sát bảng mô tả ở phần này (tenants, pages, posts, events, people, sponsors, galleries, forms, form_submissions, navigations, slideshows, tenant_users...).
+- `cms/fields` gom chung schema block/style/SEO/link để đồng bộ với union block trên frontend.
+- `cms/access/tenant.ts` hiện thực RBAC đa tenant (super-admin + owner/admin/editor/author/media-manager/viewer) và scope truy cập.
+- `cms/hooks/revalidate.ts` gửi webhook `REVALIDATE_ENDPOINT` mỗi khi nội dung thay đổi để frontend ISR.
+
+
 ### Collections chính
 1. **tenants**
    - Fields: `name`, `slug`, `domain`, `pathPrefix`, `status`, `theme` (color tokens, typography, assets), `logos`, `social`, `scripts`, `settingsOverride`.
