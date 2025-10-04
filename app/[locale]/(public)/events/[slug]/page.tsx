@@ -3,11 +3,17 @@ import Link from 'next/link';
 
 import type {Metadata} from 'next';
 import {PageShell} from '@components/layout/PageShell';
+import {Breadcrumbs} from '@components/layout/Breadcrumbs';
 import {PageRenderer} from '@components/PageRenderer';
 import {getNavigation, getRecentPosts} from '@lib/pages';
 import {getEvent, getEvents as fetchEventsForBlocks} from '@lib/events';
 import {getGalleryPreview} from '@lib/galleries';
-import {createEventMetadata, buildEventJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
+import {
+  createEventMetadata,
+  buildEventJsonLd,
+  buildBreadcrumbJsonLd,
+  buildPath
+} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getRootEventStaticParams} from '@lib/static-paths';
@@ -107,15 +113,23 @@ export default async function EventDetail({
   }
 
   const eventJsonLd = buildEventJsonLd({event, tenant, locale, tenantPath, settings});
+  const breadcrumbItems: {label: string; slugSegments?: string[]}[] = [
+    {label: locale === 'vi' ? 'Trang chủ' : 'Home'},
+    {label: locale === 'vi' ? 'Sự kiện' : 'Events', slugSegments: ['events']},
+    {label: event.title, slugSegments: ['events', event.slug]}
+  ];
   const breadcrumbJsonLd = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
-    items: [
-      {name: locale === 'vi' ? 'Trang chủ' : 'Home'},
-      {name: locale === 'vi' ? 'Sự kiện' : 'Events', slugSegments: ['events']},
-      {name: event.title, slugSegments: ['events', event.slug]}
-    ]
+    items: breadcrumbItems.map((item) => ({name: item.label, slugSegments: item.slugSegments}))
   });
+  const breadcrumbLinks = breadcrumbItems.map((item, index) => ({
+    label: item.label,
+    href:
+      index === breadcrumbItems.length - 1
+        ? undefined
+        : buildPath({locale, tenantPath, slugSegments: item.slugSegments})
+  }));
 
   return (
     <PageShell
@@ -134,6 +148,10 @@ export default async function EventDetail({
             dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbJsonLd)}}
           />
         )}
+        <Breadcrumbs
+          items={breadcrumbLinks}
+          className="mx-auto w-full max-w-3xl px-6 pb-4 text-gray-500"
+        />
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6">
           <header className="space-y-4">
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary px-4 py-1 text-xs font-semibold uppercase tracking-widest text-primary">

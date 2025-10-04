@@ -231,7 +231,7 @@ Mỗi block nhận thêm metadata `style` (định nghĩa trong `BlockStyle`) đ
 - JSON-LD `SearchResultsPage` + `ItemList` con được sinh qua `buildSearchResultsJsonLd`, giúp bot hiểu truy vấn người dùng và danh sách kết quả nổi bật.
 - Navigation seed thêm mục `Tìm kiếm` ở header để người dùng truy cập nhanh.
 
-Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến.
+Layout chung (`components/layout/PageShell.tsx`) tiêm CSS variables theo cấu hình `tenant.theme` (màu chủ đạo, secondary, accent, font display/body), nhờ vậy mỗi tenant có thể thay đổi brand và typography mà không cần rebuild. Layout cũng đọc `settings` đã merge (global + per-tenant) để bật banner cookie, load analytics scripts (GA/GTM/Meta) khi người dùng đã consent, và cấy schema JSON-LD `Organization`/`SiteNavigation` với tên/logo tuỳ biến. Thành phần `components/layout/Breadcrumbs.tsx` cung cấp breadcrumb đa ngôn ngữ, hỗ trợ chế độ màu `default`/`inverted` để dùng cho cả nền sáng và nền tối, đồng thời đồng bộ với JSON-LD `BreadcrumbList` trên các trang chi tiết.
 
 ## API Public Layer
 

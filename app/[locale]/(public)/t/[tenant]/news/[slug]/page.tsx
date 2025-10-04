@@ -3,8 +3,14 @@ import {notFound} from 'next/navigation';
 import Link from 'next/link';
 
 import {PageShell} from '@components/layout/PageShell';
+import {Breadcrumbs} from '@components/layout/Breadcrumbs';
 import {getNavigation, getPost, getRelatedPosts} from '@lib/pages';
-import {createPostMetadata, buildArticleJsonLd, buildBreadcrumbJsonLd} from '@lib/seo';
+import {
+  createPostMetadata,
+  buildArticleJsonLd,
+  buildBreadcrumbJsonLd,
+  buildPath
+} from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
 import {getTenantPostStaticParams} from '@lib/static-paths';
@@ -66,15 +72,23 @@ export default async function TenantNewsDetail({
   ]);
 
   const articleJsonLd = buildArticleJsonLd({post, tenant, locale, tenantPath, settings});
+  const breadcrumbItems: {label: string; slugSegments?: string[]}[] = [
+    {label: locale === 'vi' ? 'Trang chủ' : 'Home'},
+    {label: locale === 'vi' ? 'Tin tức' : 'News', slugSegments: ['news']},
+    {label: post.title, slugSegments: ['news', post.slug]}
+  ];
   const breadcrumbJsonLd = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
-    items: [
-      {name: locale === 'vi' ? 'Trang chủ' : 'Home'},
-      {name: locale === 'vi' ? 'Tin tức' : 'News', slugSegments: ['news']},
-      {name: post.title, slugSegments: ['news', post.slug]}
-    ]
+    items: breadcrumbItems.map((item) => ({name: item.label, slugSegments: item.slugSegments}))
   });
+  const breadcrumbLinks = breadcrumbItems.map((item, index) => ({
+    label: item.label,
+    href:
+      index === breadcrumbItems.length - 1
+        ? undefined
+        : buildPath({locale, tenantPath, slugSegments: item.slugSegments})
+  }));
 
   return (
     <PageShell
@@ -96,6 +110,10 @@ export default async function TenantNewsDetail({
             dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbJsonLd)}}
           />
         )}
+        <Breadcrumbs
+          items={breadcrumbLinks}
+          className="mx-auto w-full max-w-3xl px-6 pb-4 text-gray-500"
+        />
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6">
           <header className="space-y-3">
             <p className="text-sm uppercase tracking-wide text-primary">

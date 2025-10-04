@@ -3,6 +3,7 @@ import {notFound} from 'next/navigation';
 import Link from 'next/link';
 
 import {PageShell} from '@components/layout/PageShell';
+import {Breadcrumbs} from '@components/layout/Breadcrumbs';
 import {PageRenderer} from '@components/PageRenderer';
 import {PeopleGrid} from '@components/blocks/PeopleGrid';
 import {getNavigation} from '@lib/pages';
@@ -11,7 +12,8 @@ import {
   createPersonMetadata,
   buildPersonJsonLd,
   buildBreadcrumbJsonLd,
-  buildOrganizationJsonLd
+  buildOrganizationJsonLd,
+  buildPath
 } from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
@@ -71,15 +73,26 @@ export default async function TenantPersonDetail({
     .filter(Boolean)
     .join('/')}`.replace(/\/+/, '/');
 
+  const breadcrumbItems: {label: string; slugSegments?: string[]}[] = [
+    {label: locale === 'vi' ? 'Trang chủ' : 'Home'},
+    {
+      label: locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury',
+      slugSegments: ['people']
+    },
+    {label: person.name, slugSegments: ['people', person.slug]}
+  ];
   const breadcrumb = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
-    items: [
-      {name: locale === 'vi' ? 'Trang chủ' : 'Home'},
-      {name: locale === 'vi' ? 'Ban cố vấn & giám khảo' : 'Advisory board & jury', slugSegments: ['people']},
-      {name: person.name, slugSegments: ['people', person.slug]}
-    ]
+    items: breadcrumbItems.map((item) => ({name: item.label, slugSegments: item.slugSegments}))
   });
+  const breadcrumbLinks = breadcrumbItems.map((item, index) => ({
+    label: item.label,
+    href:
+      index === breadcrumbItems.length - 1
+        ? undefined
+        : buildPath({locale, tenantPath, slugSegments: item.slugSegments})
+  }));
   const organizationJsonLd = buildOrganizationJsonLd({tenant, locale, tenantPath, settings});
   const personJsonLd = buildPersonJsonLd({
     person,
@@ -136,6 +149,10 @@ export default async function TenantPersonDetail({
       )}
 
       <article className="bg-white py-16">
+        <Breadcrumbs
+          items={breadcrumbLinks}
+          className="mx-auto w-full max-w-6xl px-6 pb-6 text-gray-500"
+        />
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6">
           <header className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-1 flex-col items-center gap-6 text-center lg:items-start lg:text-left">

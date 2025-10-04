@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 
 import {PageShell} from '@components/layout/PageShell';
+import {Breadcrumbs} from '@components/layout/Breadcrumbs';
 import {PageRenderer} from '@components/PageRenderer';
 import {getNavigation} from '@lib/pages';
 import {
@@ -12,7 +13,8 @@ import {
 import {
   createDisciplineMetadata,
   buildDisciplineJsonLd,
-  buildBreadcrumbJsonLd
+  buildBreadcrumbJsonLd,
+  buildPath
 } from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
@@ -86,21 +88,23 @@ export default async function DisciplineDetail({
   ]);
 
   const jsonLd = buildDisciplineJsonLd({discipline, tenant, locale, tenantPath, settings});
-  const breadcrumbs = buildBreadcrumbJsonLd({
-    tenant,
+  const breadcrumbItems: {label: string; slugSegments?: string[]}[] = [
+    {label: locale === 'vi' ? 'Trang chủ' : 'Home'},
+    {label: locale === 'vi' ? 'Bộ môn' : 'Disciplines', slugSegments: ['disciplines']},
+    {label: discipline.name, slugSegments: ['disciplines', discipline.slug]}
+  ];
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
-    items: [
-      {
-        name: locale === 'vi' ? 'Bộ môn' : 'Disciplines',
-        url: `/${locale}${tenantPath}/disciplines`
-      },
-      {
-        name: discipline.name,
-        url: `/${locale}${tenantPath}/disciplines/${discipline.slug}`
-      }
-    ]
+    items: breadcrumbItems.map((item) => ({name: item.label, slugSegments: item.slugSegments}))
   });
+  const breadcrumbLinks = breadcrumbItems.map((item, index) => ({
+    label: item.label,
+    href:
+      index === breadcrumbItems.length - 1
+        ? undefined
+        : buildPath({locale, tenantPath, slugSegments: item.slugSegments})
+  }));
 
   const infoItems: {label: string; value?: string}[] = [
     {
@@ -127,8 +131,8 @@ export default async function DisciplineDetail({
       settings={settings}
     >
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}} />}
-      {breadcrumbs && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbs)}} />
+      {breadcrumbJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbJsonLd)}} />
       )}
 
       <section className="relative overflow-hidden bg-slate-900 py-20 text-white">
@@ -142,6 +146,11 @@ export default async function DisciplineDetail({
           </div>
         )}
         <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-6 px-6">
+          <Breadcrumbs
+            items={breadcrumbLinks}
+            tone="inverted"
+            className="pb-4"
+          />
           <div className="inline-flex w-max items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs uppercase tracking-[0.2em]">
             <span>{locale === 'vi' ? 'Bộ môn' : 'Discipline'}</span>
             {discipline.category && <span className="font-semibold text-primary-200">· {discipline.category}</span>}

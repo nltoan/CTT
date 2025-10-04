@@ -3,12 +3,14 @@ import Link from 'next/link';
 
 import type {Metadata} from 'next';
 import {PageShell} from '@components/layout/PageShell';
+import {Breadcrumbs} from '@components/layout/Breadcrumbs';
 import {getNavigation} from '@lib/pages';
 import {getGallery, getGalleryCategoryBySlug, getGalleryTagBySlug} from '@lib/galleries';
 import {
   createGalleryMetadata,
   buildGalleryJsonLd,
-  buildBreadcrumbJsonLd
+  buildBreadcrumbJsonLd,
+  buildPath
 } from '@lib/seo';
 import {readTenantResolutionFromRequest} from '@lib/tenant';
 import {getSettingsForTenant, DEFAULT_REVALIDATE_SECONDS} from '@lib/settings';
@@ -73,14 +75,23 @@ export default async function GalleryDetail({
   ]);
 
   const jsonLd = buildGalleryJsonLd({gallery, tenant, locale, tenantPath, settings});
+  const breadcrumbItems: {label: string; slugSegments?: string[]}[] = [
+    {label: locale === 'vi' ? 'Trang chủ' : 'Home'},
+    {label: locale === 'vi' ? 'Thư viện' : 'Galleries', slugSegments: ['galleries']},
+    {label: gallery.title, slugSegments: ['galleries', gallery.slug]}
+  ];
   const breadcrumbJsonLd = buildBreadcrumbJsonLd({
     locale,
     tenantPath,
-    items: [
-      {name: locale === 'vi' ? 'Thư viện' : 'Galleries', slugSegments: ['galleries']},
-      {name: gallery.title, slugSegments: ['galleries', gallery.slug]}
-    ]
+    items: breadcrumbItems.map((item) => ({name: item.label, slugSegments: item.slugSegments}))
   });
+  const breadcrumbLinks = breadcrumbItems.map((item, index) => ({
+    label: item.label,
+    href:
+      index === breadcrumbItems.length - 1
+        ? undefined
+        : buildPath({locale, tenantPath, slugSegments: item.slugSegments})
+  }));
 
   const backHref = `/${[locale, tenantPath.replace(/^\//, ''), 'galleries'].filter(Boolean).join('/')}`.replace(/\/+/, '/');
   const layout = gallery.layout ?? 'grid';
@@ -104,6 +115,7 @@ export default async function GalleryDetail({
                 dangerouslySetInnerHTML={{__html: JSON.stringify(breadcrumbJsonLd)}}
               />
             ) : null}
+            <Breadcrumbs items={breadcrumbLinks} className="flex justify-center" />
             <Link
               href={backHref}
               className="inline-flex items-center text-sm font-semibold text-primary hover:opacity-80"
