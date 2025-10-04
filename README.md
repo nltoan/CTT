@@ -135,6 +135,8 @@ API public tương ứng:
 - `GET /api/public/v1/people?tenant=&locale=&limit=`
 - `GET /api/public/v1/people/:slug?tenant=&locale=` (trả thêm danh sách cố vấn liên quan)
 - `GET /api/public/v1/sponsors?tenant=&locale=`
+- `GET /api/public/v1/forms?tenant=&locale=` (trả danh sách biểu mẫu đã kích hoạt cho tenant)
+- `GET /api/public/v1/forms/:key?tenant=&locale=` (trả về cấu hình biểu mẫu cụ thể để render UI frontend)
 - `GET /api/public/v1/settings?tenant=&locale=`
 - `GET /api/public/v1/posts?tenant=&locale=&page=&limit=&category=&tag=&q=` (kèm `meta` tổng số bài viết, tổng trang, bộ lọc đang áp dụng)
 - `GET /api/public/v1/posts/:slug?tenant=&locale=` (trả thêm `related` gồm các bài viết liên quan)

@@ -194,3 +194,7 @@ export function findForm({
 }) {
   return forms.find((form) => form.key === key && form.tenantId === tenantId);
 }
+
+export function listFormsByTenant({tenantId}: {tenantId: string}) {
+  return forms.filter((form) => form.tenantId === tenantId);
+}

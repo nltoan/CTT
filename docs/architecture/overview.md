@@ -298,6 +298,8 @@ Preview mode: Payload CMS có thể tạo nút “Xem thử” gọi `GET /api/p
 ## Form & Chống spam
 
 - Endpoint `POST /api/forms/:key` xử lý bởi `app/api/forms/[key]/route.ts`.
+- Endpoint đọc `GET /api/public/v1/forms` và `GET /api/public/v1/forms/:key` cung cấp cấu hình biểu mẫu theo tenant/locale cho frontend,
+  trả về JSON kèm header cache & rate limit.
 - Cấu hình form lưu tại `src/data/forms.ts` theo tenant/locale; helper `src/lib/forms.ts` lấy view, validate dữ liệu và lưu submission vào `src/data/form-submissions.ts` (mock) trước khi tích hợp Payload.
 - Honeypot field mặc định `website`, có thể đổi từng form. Server kiểm tra và trả lỗi nếu bot điền.
 - Rate limit in-memory: tối đa 5 submit/5 phút/IP/form. Header `Retry-After` được set khi bị giới hạn.

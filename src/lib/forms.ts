@@ -1,5 +1,5 @@
 import {addSubmission} from '@data/form-submissions';
-import {findForm} from '@data/forms';
+import {findForm, listFormsByTenant} from '@data/forms';
 import {defaultLocale, locales, type Locale} from '@i18n/config';
 import type {FormDefinition, FormSubmission, FormView, FormField} from '@types/forms';
 
@@ -14,6 +14,17 @@ function sanitizeValue(value: unknown) {
     return '';
   }
   return value.trim();
+}
+
+function toFormView(definition: FormDefinition, locale: Locale): FormView {
+  const formLocale = definition.locales[locale] ?? definition.locales[defaultLocale];
+
+  return {
+    ...formLocale,
+    key: definition.key,
+    tenantId: definition.tenantId,
+    honeypotField: definition.honeypotField
+  };
 }
 
 function validateField({
@@ -63,14 +74,17 @@ export function getFormView({
     return null;
   }
 
-  const formLocale = definition.locales[locale] ?? definition.locales[defaultLocale];
+  return toFormView(definition, locale);
+}
 
-  return {
-    ...formLocale,
-    key: definition.key,
-    tenantId: definition.tenantId,
-    honeypotField: definition.honeypotField
-  };
+export function listFormViews({
+  tenantId,
+  locale
+}: {
+  tenantId: string;
+  locale: Locale;
+}): FormView[] {
+  return listFormsByTenant({tenantId}).map((definition) => toFormView(definition, locale));
 }
 
 export function validateSubmission({
