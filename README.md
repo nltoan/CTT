@@ -45,6 +45,15 @@ npm run cms:export:static
 # -> file kết quả: cms/seed/static-payload.json (kèm danh sách media cần tải lên S3)
 ```
 
+Muốn import snapshot ngược vào Payload (ví dụ sau khi clone repo hoặc dựng môi trường mới), chạy:
+
+```bash
+npm run cms:import:static
+# Tuỳ chọn: thêm `-- --dry-run` để xem trước thao tác, `-- --file=path/to/snapshot.json` để chỉ định file khác
+```
+
+Script sẽ tạo/cập nhật tenants, navigation, pages và global settings tương ứng. Các file media được liệt kê trong snapshot cần upload thủ công lên S3/R2 rồi gán lại trong CMS.
+
 Các biến môi trường chính:
 
 | Biến | Ý nghĩa |

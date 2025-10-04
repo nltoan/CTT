@@ -322,7 +322,7 @@ Preview mode: Payload CMS có thể tạo nút “Xem thử” gọi `GET /api/p
 ## Lộ trình triển khai
 
 1. Khởi tạo monorepo (Turbo) chứa `apps/frontend`, `apps/cms`, `packages/ui`.
-2. Thiết lập Payload schema + RBAC + seed data (có thể dùng script `npm run cms:export:static` để sinh JSON import nhanh cho các collection chính).
+2. Thiết lập Payload schema + RBAC + seed data (sử dụng `npm run cms:export:static` để sinh snapshot và `npm run cms:import:static` để đổ dữ liệu vào môi trường mới chỉ với một lệnh).
 3. Xây API public layer (custom express router) + cache.
 4. Next.js: cấu hình i18n, middleware tenant, layout, header/footer.
 5. Implement block components lần lượt.

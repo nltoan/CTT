@@ -12,7 +12,8 @@
     "cms:dev": "payload dev --config cms/payload.config.ts",
     "cms:build": "payload build --config cms/payload.config.ts",
     "cms:start": "payload start --config cms/payload.config.ts",
-    "cms:export:static": "ts-node --project tsconfig.scripts.json cms/scripts/export-static-data.ts"
+    "cms:export:static": "ts-node --project tsconfig.scripts.json cms/scripts/export-static-data.ts",
+    "cms:import:static": "ts-node --project tsconfig.scripts.json cms/scripts/import-static-data.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "7.101.0",
