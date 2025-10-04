@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { buildConfig } from 'payload/config';
-import { mysqlAdapter } from '@payloadcms/db-mysql';
+import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage';
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
@@ -91,10 +91,9 @@ export default buildConfig({
       titleSuffix: ' · CTT CMS',
     },
   },
-  db: mysqlAdapter({
-    pool: {
-      uri: ensureEnv('DATABASE_URL'),
-      connectionLimit: Number(process.env.DATABASE_POOL_MAX ?? 10),
+  db: sqliteAdapter({
+    client: {
+      url: ensureEnv('DATABASE_URL'),
     },
   }),
   cors: (process.env.CMS_CORS ?? 'http://localhost:3000').split(','),

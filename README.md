@@ -23,7 +23,7 @@ Sau khi hoàn thành các bước trên, toàn bộ frontend đã sẵn sàng đ
 
 Thư mục `cms/` chứa cấu hình Payload CMS đầy đủ:
 
-- `payload.config.ts` khai báo toàn bộ collection/globals, kết nối MySQL và plugin lưu trữ S3/R2.
+- `payload.config.ts` khai báo toàn bộ collection/globals, kết nối SQLite và plugin lưu trữ S3/R2.
 - Thư mục `collections/` gồm schema cho tenants, pages, posts, events, people, sponsors, galleries, forms, submissions, navigation, slideshow, tenant-users... đúng với tài liệu kiến trúc.
 - `fields/` tái sử dụng cấu trúc block, SEO, link, slug, translation key để trùng khớp với union TypeScript bên frontend.
 - `access/tenant.ts` cài đặt RBAC đa tenant (super admin, owner/admin/editor/author/media-manager/viewer) và scope dữ liệu theo tenant.
@@ -32,22 +32,18 @@ Thư mục `cms/` chứa cấu hình Payload CMS đầy đủ:
 ### Chạy CMS cục bộ
 
 ```bash
-# Yêu cầu: MySQL + bucket S3/R2 sẵn có
-cp .env.example .env             # tự tạo biến môi trường cần thiết
+# Yêu cầu: Node.js 18+, SQLite (file cục bộ) và bucket S3/R2 (có thể dùng MinIO/R2)
+cp .env.example .env             # DATABASE_URL mặc định file:./payload.sqlite
 npm install
 npm run cms:dev                  # chạy Payload ở http://localhost:3001
 ```
 
+> Lần đầu chạy, Payload sẽ tự tạo file `payload.sqlite` ở thư mục gốc. Muốn reset dữ liệu, chỉ cần xoá file này trước khi khởi động lại.
+
 ### Demo nhanh frontend + backend với dữ liệu mẫu
 
-1. Khởi động MySQL (ví dụ với Docker):
-
-   ```bash
-   docker run --name ctt-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=ctt -e MYSQL_DATABASE=ctt -d mysql:8
-   ```
-
-2. Sao chép `.env.example` sang `.env` và cập nhật `DATABASE_URL=mysql://root:ctt@localhost:3306/ctt` cùng các biến S3 (có thể dùng MinIO/R2).
-3. Cài đặt phụ thuộc và mở hai terminal:
+1. Sao chép `.env.example` sang `.env` (mặc định `DATABASE_URL=file:./payload.sqlite`) và cập nhật các biến S3 nếu bạn có bucket riêng.
+2. Cài đặt phụ thuộc và mở hai terminal:
 
    ```bash
    npm install
@@ -55,7 +51,7 @@ npm run cms:dev                  # chạy Payload ở http://localhost:3001
    npm run cms:dev    # Terminal 2: Payload Admin ở http://localhost:3001
    ```
 
-4. (Tuỳ chọn) Tạo và nạp dữ liệu mẫu khớp với seed frontend:
+3. (Tuỳ chọn) Tạo và nạp dữ liệu mẫu khớp với seed frontend:
 
    ```bash
    npm run cms:export:static                              # sinh cms/seed/static-payload.json
@@ -84,8 +80,7 @@ Các biến môi trường chính:
 
 | Biến | Ý nghĩa |
 | --- | --- |
-| `DATABASE_URL` | Chuỗi kết nối MySQL (ví dụ `mysql://user:pass@localhost:3306/ctt`) |
-| `DATABASE_POOL_MAX` | (Tuỳ chọn) Giới hạn kết nối pool MySQL, mặc định `10` |
+| `DATABASE_URL` | Đường dẫn SQLite (ví dụ `file:./payload.sqlite` hoặc `file:/data/ctt.sqlite`) |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_ENDPOINT` | Cấu hình lưu trữ media trên S3/R2 |
 | `PAYLOAD_PUBLIC_SERVER_URL` | URL public của CMS để sinh link admin/webhook |
 | `CMS_CORS`, `CMS_CSRF` | Danh sách domain frontend được phép gọi API Payload |

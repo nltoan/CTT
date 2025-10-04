@@ -19,7 +19,7 @@
     "@sentry/nextjs": "7.101.0",
     "@sentry/node": "7.101.0",
     "@aws-sdk/client-s3": "3.521.0",
-    "@payloadcms/db-mysql": "2.10.7",
+    "@payloadcms/db-sqlite": "2.10.7",
     "@payloadcms/plugin-cloud-storage": "2.10.7",
     "clsx": "2.1.0",
     "compression": "1.7.4",
@@ -31,7 +31,7 @@
     "next": "14.1.0",
     "next-intl": "3.12.0",
     "payload": "2.10.7",
-    "mysql2": "3.9.2",
+    "better-sqlite3": "9.4.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "sharp": "0.33.2"
