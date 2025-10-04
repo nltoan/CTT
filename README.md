@@ -23,7 +23,7 @@ Sau khi hoàn thành các bước trên, toàn bộ frontend đã sẵn sàng đ
 
 Thư mục `cms/` chứa cấu hình Payload CMS đầy đủ:
 
-- `payload.config.ts` khai báo toàn bộ collection/globals, kết nối PostgreSQL và plugin lưu trữ S3/R2.
+- `payload.config.ts` khai báo toàn bộ collection/globals, kết nối MySQL và plugin lưu trữ S3/R2.
 - Thư mục `collections/` gồm schema cho tenants, pages, posts, events, people, sponsors, galleries, forms, submissions, navigation, slideshow, tenant-users... đúng với tài liệu kiến trúc.
 - `fields/` tái sử dụng cấu trúc block, SEO, link, slug, translation key để trùng khớp với union TypeScript bên frontend.
 - `access/tenant.ts` cài đặt RBAC đa tenant (super admin, owner/admin/editor/author/media-manager/viewer) và scope dữ liệu theo tenant.
@@ -32,11 +32,37 @@ Thư mục `cms/` chứa cấu hình Payload CMS đầy đủ:
 ### Chạy CMS cục bộ
 
 ```bash
-# Yêu cầu: PostgreSQL + bucket S3/R2 sẵn có
+# Yêu cầu: MySQL + bucket S3/R2 sẵn có
 cp .env.example .env             # tự tạo biến môi trường cần thiết
 npm install
 npm run cms:dev                  # chạy Payload ở http://localhost:3001
 ```
+
+### Demo nhanh frontend + backend với dữ liệu mẫu
+
+1. Khởi động MySQL (ví dụ với Docker):
+
+   ```bash
+   docker run --name ctt-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=ctt -e MYSQL_DATABASE=ctt -d mysql:8
+   ```
+
+2. Sao chép `.env.example` sang `.env` và cập nhật `DATABASE_URL=mysql://root:ctt@localhost:3306/ctt` cùng các biến S3 (có thể dùng MinIO/R2).
+3. Cài đặt phụ thuộc và mở hai terminal:
+
+   ```bash
+   npm install
+   npm run dev        # Terminal 1: frontend ở http://localhost:3000
+   npm run cms:dev    # Terminal 2: Payload Admin ở http://localhost:3001
+   ```
+
+4. (Tuỳ chọn) Tạo và nạp dữ liệu mẫu khớp với seed frontend:
+
+   ```bash
+   npm run cms:export:static                              # sinh cms/seed/static-payload.json
+   npm run cms:import:static -- --file=cms/seed/static-payload.json
+   ```
+
+Sau khi import, đăng nhập Payload sẽ thấy đầy đủ tenants, navigation, pages và settings giống dữ liệu frontend để bạn duyệt thử.
 
 Để xuất toàn bộ seed tĩnh (tenants, navigation, pages, settings) thành JSON sẵn sàng import vào Payload, dùng:
 
@@ -58,7 +84,8 @@ Các biến môi trường chính:
 
 | Biến | Ý nghĩa |
 | --- | --- |
-| `DATABASE_URL` | Chuỗi kết nối PostgreSQL |
+| `DATABASE_URL` | Chuỗi kết nối MySQL (ví dụ `mysql://user:pass@localhost:3306/ctt`) |
+| `DATABASE_POOL_MAX` | (Tuỳ chọn) Giới hạn kết nối pool MySQL, mặc định `10` |
 | `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_REGION`, `S3_ENDPOINT` | Cấu hình lưu trữ media trên S3/R2 |
 | `PAYLOAD_PUBLIC_SERVER_URL` | URL public của CMS để sinh link admin/webhook |
 | `CMS_CORS`, `CMS_CSRF` | Danh sách domain frontend được phép gọi API Payload |

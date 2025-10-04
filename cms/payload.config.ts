@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { buildConfig } from 'payload/config';
-import { postgresAdapter } from '@payloadcms/db-postgres';
+import { mysqlAdapter } from '@payloadcms/db-mysql';
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage';
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
@@ -91,10 +91,10 @@ export default buildConfig({
       titleSuffix: ' · CTT CMS',
     },
   },
-  db: postgresAdapter({
+  db: mysqlAdapter({
     pool: {
-      connectionString: ensureEnv('DATABASE_URL'),
-      max: Number(process.env.DATABASE_POOL_MAX ?? 10),
+      uri: ensureEnv('DATABASE_URL'),
+      connectionLimit: Number(process.env.DATABASE_POOL_MAX ?? 10),
     },
   }),
   cors: (process.env.CMS_CORS ?? 'http://localhost:3000').split(','),
