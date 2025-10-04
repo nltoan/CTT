@@ -68,6 +68,63 @@ export function buildPath({
   return `/${segments.join('/')}`.replace(/\/$/, '');
 }
 
+function uniqueImages(urls: (string | undefined)[]) {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const url of urls) {
+    if (!url) {
+      continue;
+    }
+    if (!seen.has(url)) {
+      seen.add(url);
+      result.push(url);
+    }
+  }
+
+  return result;
+}
+
+export function buildOgImagePath({
+  locale,
+  tenantPath,
+  slugSegments
+}: {
+  locale: 'vi' | 'en';
+  tenantPath?: string;
+  slugSegments?: string[];
+}) {
+  const basePath = buildPath({locale, tenantPath, slugSegments});
+  const trimmed = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+  const prefix = trimmed === '/' ? '' : trimmed;
+  const path = `${prefix}/opengraph-image`;
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+export function buildOgImageUrl(args: {
+  locale: 'vi' | 'en';
+  tenantPath?: string;
+  slugSegments?: string[];
+}) {
+  return buildAbsoluteUrl(buildOgImagePath(args));
+}
+
+function composeOgImages({
+  primary,
+  fallback,
+  ogImageUrl
+}: {
+  primary?: string;
+  fallback?: string;
+  ogImageUrl: string;
+}) {
+  const images = uniqueImages([primary, ogImageUrl, fallback]);
+  if (images.length === 0) {
+    return [DEFAULT_OG_IMAGE];
+  }
+  return images;
+}
+
 function resolveImage(image?: string, tenant?: Tenant, fallback?: string) {
   return image ?? fallback ?? tenant?.logoUrl ?? DEFAULT_OG_IMAGE;
 }
@@ -106,7 +163,14 @@ export function createPageMetadata({
     })
   );
 
-  const image = resolveImage(page.seo?.image, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: page.seo?.image,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const siteName = defaults.siteName ?? tenant.name;
 
   return {
@@ -123,13 +187,13 @@ export function createPageMetadata({
       description,
       siteName,
       locale: mapLocaleToBcp47(locale),
-      images: [{url: image}]
+      images: images.map((url) => ({url}))
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -161,7 +225,13 @@ export function createCollectionMetadata({
   const canonicalPath = `${basePath}${queryString}`;
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
   const defaults = settings?.seo ?? {};
-  const image = resolveImage(undefined, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const siteName = defaults.siteName ?? tenant.name;
   const alternateLanguages = Object.fromEntries(
     tenant.locales.map((availableLocale) => {
@@ -189,13 +259,13 @@ export function createCollectionMetadata({
       description,
       siteName,
       locale: mapLocaleToBcp47(locale),
-      images: [{url: image}]
+      images: images.map((url) => ({url}))
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -218,7 +288,14 @@ export function createPostMetadata({
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
   const defaults = settings?.seo ?? {};
   const description = post.excerpt ?? defaults.description ?? tenant.description ?? '';
-  const image = resolveImage(post.coverImage, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: post.coverImage,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const translations = findPostTranslations({
     tenantId: post.tenantId,
     translationKey: post.translationKey
@@ -252,13 +329,13 @@ export function createPostMetadata({
       modifiedTime: post.updatedAt ?? post.publishedAt,
       authors: [post.author ?? tenant.name],
       tags: post.tags,
-      images: [{url: image}]
+      images: images.map((url) => ({url}))
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -282,7 +359,14 @@ export function createEventMetadata({
   const defaults = settings?.seo ?? {};
   const description =
     event.summary ?? event.description ?? defaults.description ?? tenant.description ?? '';
-  const image = resolveImage(event.coverImage, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: event.coverImage,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const translations = findEventTranslations({
     translationKey: event.translationKey,
     eventId: event.id
@@ -312,7 +396,7 @@ export function createEventMetadata({
       description,
       siteName: defaults.siteName ?? tenant.name,
       locale: mapLocaleToBcp47(locale),
-      images: [{url: image}],
+      images: images.map((url) => ({url})),
       startTime: event.startsAt,
       endTime: event.endsAt
     },
@@ -320,7 +404,7 @@ export function createEventMetadata({
       card: 'summary_large_image',
       title: event.title,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -344,8 +428,14 @@ export function createDisciplineMetadata({
   const defaults = settings?.seo ?? {};
   const description =
     discipline.shortDescription ?? discipline.description ?? defaults.description ?? tenant.description ?? '';
-  const image = resolveImage(discipline.coverImage?.url, tenant, defaults.image);
-  const ogImage = discipline.coverImage?.url ?? image;
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: discipline.coverImage?.url,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const translations = findDisciplineTranslations({
     translationKey: discipline.translationKey,
     disciplineId: discipline.id
@@ -375,13 +465,13 @@ export function createDisciplineMetadata({
       description,
       siteName: defaults.siteName ?? tenant.name,
       locale: mapLocaleToBcp47(locale),
-      images: ogImage ? [ogImage] : undefined
+      images: images.map((url) => ({url}))
     },
     twitter: {
       card: 'summary_large_image',
       title: discipline.name,
       description,
-      images: ogImage ? [ogImage] : undefined
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -404,7 +494,14 @@ export function createGalleryMetadata({
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
   const defaults = settings?.seo ?? {};
   const description = gallery.description ?? defaults.description ?? tenant.description ?? '';
-  const image = resolveImage(gallery.coverImage?.url, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: gallery.coverImage?.url,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
   const translations = findGalleryTranslations({
     translationKey: gallery.translationKey,
     galleryId: gallery.id
@@ -434,14 +531,14 @@ export function createGalleryMetadata({
       description,
       siteName: defaults.siteName ?? tenant.name,
       locale: mapLocaleToBcp47(locale),
-      images: [{url: image}],
+      images: images.map((url) => ({url})),
       modifiedTime: gallery.updatedAt
     },
     twitter: {
       card: 'summary_large_image',
       title: gallery.title,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }
@@ -611,7 +708,14 @@ export function createPersonMetadata({
   const canonicalUrl = buildAbsoluteUrl(canonicalPath);
   const defaults = settings?.seo ?? {};
   const description = person.bio ?? defaults.description ?? tenant.description ?? '';
-  const image = resolveImage(person.photo?.url, tenant, defaults.image);
+  const ogImageUrl = buildOgImageUrl({locale, tenantPath, slugSegments: ['people', person.slug]});
+  const fallbackImage = resolveImage(undefined, tenant, defaults.image);
+  const images = composeOgImages({
+    primary: person.photo?.url,
+    fallback: fallbackImage,
+    ogImageUrl
+  });
+  const primaryImage = images[0] ?? ogImageUrl;
 
   const translations = findPersonTranslations({tenantId: person.tenantId, slug: person.slug});
   const alternateLanguages = Object.fromEntries(
@@ -639,14 +743,14 @@ export function createPersonMetadata({
       description,
       siteName: defaults.siteName ?? tenant.name,
       locale: mapLocaleToBcp47(locale),
-      images: [{url: image}],
+      images: images.map((url) => ({url})),
       updatedTime: person.updatedAt
     },
     twitter: {
       card: 'summary_large_image',
       title: person.name,
       description,
-      images: [image]
+      images: [primaryImage]
     }
   } satisfies Metadata;
 }

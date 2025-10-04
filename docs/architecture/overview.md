@@ -282,7 +282,7 @@ Preview mode: Payload CMS có thể tạo nút “Xem thử” gọi `GET /api/p
 - Lưu `translations` cho mỗi field text trong CMS (`vi`, `en`).
 - Frontend dùng `next-intl` với file messages UI + dynamic content.
 - Render `<link rel="alternate" hrefLang="vi">` & `en`.
-- Metadata helper `src/lib/seo.ts` sinh canonical URL, Open Graph/Twitter card, alternates hreflang, JSON-LD và tái sử dụng cho page/post/collection.
+- Metadata helper `src/lib/seo.ts` sinh canonical URL, Open Graph/Twitter card, alternates hreflang, JSON-LD và tái sử dụng cho page/post/collection; đồng thời xây dựng URL `/opengraph-image` để phục vụ ảnh chia sẻ động theo tenant/locale.
 - Sitemap generator per tenant: `app/sitemap.ts` lấy data `pages`, `posts`, `events`, tự động tính `priority`/`lastModified`.
 - Structured data JSON-LD: `Organization`, `SiteNavigation`, `Breadcrumb`, `Article`, `Event`, `ItemList` (listing) và `Person` (hồ sơ giám khảo) cho news/people/sponsors.
 - Robots.txt: `app/robots.ts` dùng `NEXT_PUBLIC_SITE_URL` (hoặc `SITE_URL`) để xuất `Host` và `Sitemap`.
