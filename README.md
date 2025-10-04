@@ -169,6 +169,15 @@ Bộ test dùng [Vitest](https://vitest.dev/) + Testing Library để kiểm tra
 
 - `NEXT_PUBLIC_SITE_URL` (hoặc `SITE_URL`): URL gốc dùng để sinh canonical URL, sitemap, robots và metadata Open Graph. Nếu không đặt, giá trị mặc định là `https://ctt.example.com`.
 - `PREVIEW_SECRET`: khóa bí mật cho route `/api/preview` (đồng bộ với Payload CMS để bật preview/draft mode).
+- `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN`: cung cấp DSN cho Sentry (backend/frontend). Nếu bỏ trống, việc khởi tạo sẽ được bỏ qua.
+- `SENTRY_ENABLED` / `NEXT_PUBLIC_SENTRY_ENABLED`: cho phép bật thu thập log ở môi trường không phải production (mặc định chỉ bật ở production khi có DSN).
+- `SENTRY_TRACES_SAMPLE_RATE`, `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE`, `NEXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE`, `NEXT_PUBLIC_SENTRY_REPLAYS_ERROR_SAMPLE_RATE`: tuỳ chỉnh tần suất thu thập trace và session replay.
+
+### Giám sát & logging
+
+- Frontend tích hợp `@sentry/nextjs` qua các file `sentry.client/server/edge.config.ts`. Khi khai báo biến môi trường phù hợp, sự cố runtime sẽ tự động gửi tới Sentry và hiển thị mã tham chiếu ở giao diện lỗi (`app/[locale]/(public)/error.tsx`).
+- CMS dùng `@sentry/node` trong `cms/monitoring/sentry.ts`; `payload.config.ts` tự động đăng ký middleware theo DSN để log request và lỗi admin. Bạn có thể mở rộng bằng Logtail/Datadog bằng cách thêm middleware riêng.
+- Điều chỉnh mức sampling thông qua các biến môi trường ở trên. Mặc định trace chỉ bật ở production, replay tắt trừ khi bạn cấu hình.
 
 ## Bạn cần làm gì tiếp theo?
 

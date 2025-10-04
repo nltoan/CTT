@@ -24,6 +24,7 @@ import { PostTags } from './collections/PostTags';
 import { EventCategories } from './collections/EventCategories';
 import { Disciplines } from './collections/Disciplines';
 import { Settings } from './globals/Settings';
+import { registerCmsMonitoring } from './monitoring/sentry';
 
 dotenv.config();
 
@@ -113,4 +114,14 @@ export default buildConfig({
       },
     }),
   ],
+  onInit: async (payload) => {
+    if (payload?.express) {
+      const sentryEnabled = registerCmsMonitoring(payload.express);
+      if (sentryEnabled) {
+        payload.logger.info('Sentry monitoring initialised for CMS');
+      } else {
+        payload.logger.debug('Sentry monitoring skipped (missing DSN or disabled)');
+      }
+    }
+  },
 });
