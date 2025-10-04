@@ -2,6 +2,7 @@ import {SiteFooter} from './SiteFooter';
 import {SiteHeader} from './SiteHeader';
 import {CookieBanner} from './CookieBanner';
 import {AnalyticsScripts} from './AnalyticsScripts';
+import {SkipLink} from './SkipLink';
 
 import type {Navigation, Tenant} from '@types/cms';
 import {getTenantThemeCssVariables} from '@lib/tenant';
@@ -33,19 +34,28 @@ export function PageShell({
   });
   const cookieStorageKey = `cookie-consent:${tenant.id}:${locale}`;
 
+  const skipLabel = locale === 'vi' ? 'Bỏ qua tới nội dung chính' : 'Skip to main content';
+
   return (
     <div
       className="flex min-h-screen flex-col font-body"
       style={getTenantThemeCssVariables(tenant)}
       data-tenant={tenant.slug}
     >
+      <SkipLink label={skipLabel} />
       <SiteHeader
         tenant={tenant}
         navigation={headerNavigation}
         locale={locale}
         tenantPath={tenantPath}
       />
-      <div className="flex-1">{children}</div>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex flex-1 flex-col gap-16 focus:outline-none"
+      >
+        {children}
+      </main>
       <SiteFooter tenant={tenant} navigation={footerNavigation} locale={locale} tenantPath={tenantPath} />
       <AnalyticsScripts
         analytics={settings?.analytics}
