@@ -1,0 +1,9 @@
+{
+  "root": true,
+  "extends": ["next", "next/core-web-vitals"],
+  "rules": {
+    "react/jsx-sort-props": ["warn", {"callbacksLast": true, "shorthandFirst": true, "noSortAlphabetically": false}],
+    "react/jsx-no-leaked-render": "error",
+    "@next/next/no-img-element": "off"
+  }
+}

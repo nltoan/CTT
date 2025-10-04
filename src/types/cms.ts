@@ -1,0 +1,265 @@
+import type {Block, MediaRef} from './blocks';
+
+export type PublicationStatus = 'draft' | 'published' | 'scheduled';
+
+export type TenantSocialLink = {
+  id: string;
+  label: string;
+  url: string;
+  platform?: 'facebook' | 'youtube' | 'instagram' | 'tiktok' | 'website' | string;
+};
+
+export type Tenant = {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  logoUrl?: string;
+  locales: ('vi' | 'en')[];
+  domain?: string;
+  fontDisplay?: string;
+  fontBody?: string;
+  socialLinks?: TenantSocialLink[];
+};
+
+export type NavigationItem = {
+  id: string;
+  label: string;
+  href: string;
+  order?: number;
+  target?: '_blank' | '_self';
+};
+
+export type Navigation = {
+  id: string;
+  key: 'header' | 'footer';
+  tenantId: string;
+  items: NavigationItem[];
+  locale: 'vi' | 'en';
+};
+
+export type Page = {
+  id: string;
+  slug: string;
+  title: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  blocks: Block[];
+  updatedAt?: string;
+  seo?: {
+    title?: string;
+    description?: string;
+    image?: string;
+  };
+  status?: PublicationStatus;
+  publishedAt?: string;
+};
+
+export type Post = {
+  id: string;
+  slug: string;
+  title: string;
+  translationKey: string;
+  excerpt?: string;
+  coverImage?: string;
+  content?: string;
+  publishedAt: string;
+  updatedAt?: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  author?: string;
+  tags?: string[];
+  category?: string;
+  status?: PublicationStatus;
+};
+
+export type Event = {
+  id: string;
+  slug: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  title: string;
+  summary?: string;
+  startsAt: string;
+  endsAt?: string;
+  location?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  coverImage?: string;
+  content?: string;
+  blocks?: Block[];
+  updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
+};
+
+export type DisciplineScheduleItem = {
+  title: string;
+  description?: string;
+  startsAt?: string;
+  endsAt?: string;
+};
+
+export type Discipline = {
+  id: string;
+  slug: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  shortDescription?: string;
+  description?: string;
+  category?: string;
+  level?: 'beginner' | 'intermediate' | 'advanced' | string;
+  ageRange?: string;
+  tags?: string[];
+  coverImage?: MediaRef;
+  repertoire?: string[];
+  requirements?: string[];
+  schedule?: DisciplineScheduleItem[];
+  jury?: string[];
+  relatedPeople?: string[];
+  blocks?: Block[];
+  updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
+};
+
+export type PersonSocialProfile = {
+  label: string;
+  url: string;
+  platform?: 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'website' | string;
+};
+
+export type PersonHighlight = {
+  title: string;
+  description?: string;
+  year?: string;
+};
+
+export type Person = {
+  id: string;
+  slug: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  title?: string;
+  bio?: string;
+  order?: number;
+  photo?: MediaRef;
+  socialLinks?: PersonSocialProfile[];
+  disciplines?: string[];
+  achievements?: string[];
+  highlights?: PersonHighlight[];
+  quote?: string;
+  videoEmbedUrl?: string;
+  blocks?: Block[];
+  updatedAt?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
+};
+
+export type Sponsor = {
+  id: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  tier?: 'gold' | 'silver' | 'bronze';
+  url?: string;
+  logo: MediaRef;
+  description?: string;
+};
+
+export type GalleryItem = {
+  id: string;
+  media: MediaRef;
+  caption?: string;
+  description?: string;
+  featured?: boolean;
+};
+
+export type Gallery = {
+  id: string;
+  slug: string;
+  translationKey: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  title: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  coverImage?: MediaRef;
+  layout?: 'grid' | 'masonry';
+  items: GalleryItem[];
+  updatedAt?: string;
+  status?: PublicationStatus;
+  publishedAt?: string;
+};
+
+export type SlideshowSlide = {
+  id: string;
+  title?: string;
+  caption?: string;
+  image: MediaRef;
+  href?: string;
+};
+
+export type Slideshow = {
+  id: string;
+  tenantId: string;
+  locale: 'vi' | 'en';
+  name: string;
+  description?: string;
+  translationKey?: string;
+  slides: SlideshowSlide[];
+  options?: {
+    autoplay?: boolean;
+    interval?: number;
+    loop?: boolean;
+  };
+  status?: PublicationStatus;
+  publishedAt?: string;
+  updatedAt?: string;
+};
+
+export type AnalyticsSettings = {
+  gaId?: string;
+  gtmId?: string;
+  metaPixelId?: string;
+  requiresConsent?: boolean;
+};
+
+export type CookieBannerSettings = {
+  enabled?: boolean;
+  message: string;
+  acceptLabel?: string;
+  rejectLabel?: string;
+  moreInfoLabel?: string;
+  moreInfoUrl?: string;
+};
+
+export type SeoDefaults = {
+  defaultTitle?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  organizationName?: string;
+};
+
+export type SiteSettings = {
+  id: string;
+  tenantId?: string;
+  locale: 'vi' | 'en';
+  seo?: SeoDefaults;
+  revalidateSeconds?: number;
+  analytics?: AnalyticsSettings;
+  cookieBanner?: CookieBannerSettings;
+};
