@@ -38,6 +38,13 @@ npm install
 npm run cms:dev                  # chạy Payload ở http://localhost:3001
 ```
 
+Để xuất toàn bộ seed tĩnh (tenants, navigation, pages, settings) thành JSON sẵn sàng import vào Payload, dùng:
+
+```bash
+npm run cms:export:static
+# -> file kết quả: cms/seed/static-payload.json (kèm danh sách media cần tải lên S3)
+```
+
 Các biến môi trường chính:
 
 | Biến | Ý nghĩa |
