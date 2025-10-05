@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { buildConfig } from 'payload/config';
-import { mysqlAdapter } from '@payloadcms/db-mysql';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage';
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
@@ -91,7 +91,7 @@ export default buildConfig({
       titleSuffix: ' · CTT CMS',
     },
   },
-  db: mysqlAdapter({
+  db: postgresAdapter({
     pool: {
       connectionString: ensureEnv('DATABASE_URL'),
     },
