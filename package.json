@@ -9,9 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "cms:dev": "payload dev --config cms/payload.config.ts",
-    "cms:build": "payload build --config cms/payload.config.ts",
-    "cms:start": "payload start --config cms/payload.config.ts",
+    "cms:dev": "payload dev --config payload.config.ts",
+    "cms:build": "payload build --config payload.config.ts",
+    "cms:start": "payload start --config payload.config.ts",
     "cms:export:static": "ts-node --project tsconfig.scripts.json cms/scripts/export-static-data.ts",
     "cms:import:static": "ts-node --project tsconfig.scripts.json cms/scripts/import-static-data.ts"
   },
