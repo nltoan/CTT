@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 import { buildConfig } from 'payload/config';
-import { sqliteAdapter } from '@payloadcms/db-sqlite';
+import { postgresAdapter } from '@payloadcms/db-postgres';
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage';
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
@@ -91,9 +91,9 @@ export default buildConfig({
       titleSuffix: ' · CTT CMS',
     },
   },
-  db: sqliteAdapter({
-    client: {
-      url: ensureEnv('DATABASE_URL'),
+  db: postgresAdapter({
+    pool: {
+      connectionString: ensureEnv('DATABASE_URL'),
     },
   }),
   cors: (process.env.CMS_CORS ?? 'http://localhost:3000').split(','),
